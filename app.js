@@ -5,6 +5,7 @@ require("dotenv").config({
 			? true
 			: true,
 	path: path.resolve(__dirname, ".env"),
+	override: true,
 });
 
 const express = require("express");
@@ -49,6 +50,7 @@ app.use(cookieParser());
  * Import all of your routes below
  */
 // Import here
+require("./api/cpo.api")(app);
 
 app.use("*", (req, res, next) => {
 	logger.error({

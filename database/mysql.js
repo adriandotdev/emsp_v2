@@ -22,6 +22,7 @@ pool.getConnection(function (err, connection) {
 });
 
 pool.on("release", function (connection) {
+	logger.info("Database: %s", process.env.DB_DATABASE);
 	logger.info("Connection %d released", connection.threadId);
 });
 

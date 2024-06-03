@@ -4,12 +4,14 @@ const { validationResult, body } = require("express-validator");
 const logger = require("../config/winston");
 
 // Import your SERVICE HERE
+const CPOService = require("../services/CPOService");
 // Import MISC HERE
 
 /**
  * @param {import('express').Express} app
  */
 module.exports = (app) => {
+	const service = new CPOService();
 	const tokenMiddleware = new TokenMiddleware();
 	/**
 	 * This function will be used by the express-validator for input validation,
@@ -38,9 +40,20 @@ module.exports = (app) => {
 		 */
 		async (req, res, next) => {
 			try {
+				logger.info({
+					REGISTER_CPO_REQUEST: {
+						data: {
+							...req.body,
+						},
+						message: "SUCCESS",
+					},
+				});
+
+				const result = await service.RegisterCPO({ ...req.body });
+
 				return res
 					.status(200)
-					.json({ status: 200, data: [], message: "Success" });
+					.json({ status: 200, data: result, message: "Success" });
 			} catch (err) {
 				req.error_name = "REGISTER_CPO_ERROR";
 				next(err);
