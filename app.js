@@ -50,6 +50,7 @@ app.use(cookieParser());
  * Import all of your routes below
  */
 // Import here
+require("./api/accounts.api")(app);
 require("./api/cpo.api")(app);
 
 app.use("*", (req, res, next) => {
