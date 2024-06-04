@@ -28,4 +28,20 @@ module.exports = class CPORepository {
 			);
 		});
 	}
+
+	GetCPODetails() {
+		const QUERY = `
+			SELECT * FROM cpo_owners
+		`;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, (err, result) => {
+				if (err) {
+					reject(err);
+				}
+
+				resolve(result);
+			});
+		});
+	}
 };

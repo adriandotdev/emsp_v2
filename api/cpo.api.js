@@ -5,12 +5,14 @@ const logger = require("../config/winston");
 
 // Import your SERVICE HERE
 const CPOService = require("../services/CPOService");
-// Import MISC HERE
 
+// Import MISC HERE
+const { HttpUnprocessableEntity } = require("../utils/HttpError");
 /**
  * @param {import('express').Express} app
+ * @param {import('multer').Multer} upload
  */
-module.exports = (app) => {
+module.exports = (app, upload) => {
 	const service = new CPOService();
 	const tokenMiddleware = new TokenMiddleware();
 	/**
@@ -32,7 +34,41 @@ module.exports = (app) => {
 
 	app.post(
 		"/emsp/api/v1/cpo/register",
-		[tokenMiddleware.BasicTokenVerifier()],
+		[
+			tokenMiddleware.BasicTokenVerifier(),
+			body("username")
+				.notEmpty()
+				.withMessage("Missing required property: username"),
+			body("cpo_owner_name")
+				.notEmpty()
+				.withMessage("Missing required property: cpo_owner_name"),
+			body("contact_name")
+				.notEmpty()
+				.withMessage("Missing required property: contact_name"),
+			body("contact_number")
+				.notEmpty()
+				.withMessage("Missing required property: contact_number")
+				.custom((value) => String(value).match(/^\+63\d{10}$|^09\d{9}$/))
+				.withMessage(
+					`Error: The acceptable formats are +639XXXXXXXXX or 09XXXXXXXXX.`
+				),
+			body("contact_email")
+				.notEmpty()
+				.withMessage("Missing required property: contact_email")
+				.custom((value) =>
+					String(value).match(
+						/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+					)
+				)
+				.withMessage("Error: Invalid email address"),
+			body("ocpp_ready")
+				.notEmpty()
+				.withMessage("Missing required property: occp_ready")
+				.isBoolean({ strict: true })
+				.withMessage(
+					"Invalid value for occp_ready: It must be in boolean type"
+				),
+		],
 
 		/**
 		 * @param {import('express').Request} req
@@ -49,6 +85,8 @@ module.exports = (app) => {
 					},
 				});
 
+				validate(req, res);
+
 				const result = await service.RegisterCPO({ ...req.body });
 
 				return res
@@ -58,6 +96,21 @@ module.exports = (app) => {
 				req.error_name = "REGISTER_CPO_ERROR";
 				next(err);
 			}
+		}
+	);
+
+	app.post(
+		"/emsp/api/v1/cpo/upload",
+		[tokenMiddleware.BasicTokenVerifier(), upload.single("cpo_logo")],
+		/**
+		 * @param {import('express').Request} req
+		 * @param {import('express').Response} res
+		 */
+		async (req, res) => {
+			console.log(req.file);
+			return res
+				.status(200)
+				.json({ status: 200, data: [], message: "Success" });
 		}
 	);
 
