@@ -30,13 +30,13 @@ module.exports = class CPORepository {
 		});
 	}
 
-	RegisterCPO(data, connection) {
+	RegisterCPO(data) {
 		const QUERY = `
-            CALL EMSP_REGISTER_CPO(?,?,?,?,?,?,?)
+            CALL EMSP_REGISTER_CPO(?,?,?,?,?,?,?,?)
         `;
 
 		return new Promise((resolve, reject) => {
-			connection.query(
+			mysql.query(
 				QUERY,
 				[
 					data.username,
@@ -46,6 +46,7 @@ module.exports = class CPORepository {
 					data.contact_number,
 					data.contact_email,
 					data.ocpp_ready,
+					data.token_c,
 				],
 				(err, result) => {
 					if (err) {

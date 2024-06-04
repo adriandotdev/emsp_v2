@@ -24,33 +24,38 @@ module.exports = class Email {
 		this._data = data;
 	}
 
-	async SendOTP() {
+	async SendFindEVPlugCredentials() {
 		winston.info({
 			CLASS_EMAIL_SEND_OTP_METHOD: {
 				email: this._email_address,
 				from: process.env.NODEMAILER_USER,
 				to: this._email_address,
-				otp: this._data.otp,
+				data: this._data,
 			},
 		});
 
 		try {
 			let htmlFormat = `
-			  <h1>ParkNcharge</h1>
+			  <h1>Find EV Plug PH</h1>
 	
-			  <h2>PLEASE DO NOT SHARE THIS OTP TO ANYONE</h2>
-			  ${this._data.otp}
-			  
+			  <h2>Please do not share this details to anyone</h2>
+			  <h3>Party ID</h3>
+			  ${this._data.party_id}
+			  <h3>Token C</h3>
+			  ${this._data.token_c}
+			  <h3>Charging Point Operator ID</h3>
+			  ${this._data.cpo_owner_id}
+
 			  <p>Kind regards,</p>
-			  <p><b>ParkNcharge</b></p>
+			  <p><b>Find EV Plug PH</b></p>
 			`;
 
-			let textFormat = `ParkNcharge\n\nPLEASE DO NOT SHARE THIS OTP TO ANYONE\n\nKind regards,\nParkNCharge`;
+			let textFormat = `N/A`;
 			// send mail with defined transport object
 			const info = await transporter.sendMail({
 				from: process.env.NODEMAILER_USER, // sender address
 				to: this._email_address, // list of receivers
-				subject: "ParkNcharge Credentials (no-reply)", // Subject line
+				subject: "Find EV Plug PH Credentials (no-reply)", // Subject line
 				text: textFormat, // plain text body
 				html: htmlFormat, // html body
 			});

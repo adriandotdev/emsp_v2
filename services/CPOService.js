@@ -2,6 +2,8 @@ const CPORepository = require("../repository/CPORepository");
 const Crypto = require("../utils/Crypto");
 const { HttpBadRequest } = require("../utils/HttpError");
 const axios = require("axios");
+const Email = require("../utils/Email");
+
 module.exports = class CPOService {
 	#repository;
 
@@ -10,6 +12,36 @@ module.exports = class CPOService {
 	}
 
 	async RegisterCPO(data) {
+		try {
+			const party_id = await this.#GeneratePartyID(data.cpo_owner_name);
+			const token_c = Crypto.Encrypt(JSON.stringify({ party_id }));
+
+			const cpoResult = await this.#repository.RegisterCPO({
+				...data,
+				party_id,
+				token_c,
+			});
+
+			const cpoStatus = cpoResult[0][0].STATUS;
+			const cpoStatusType = cpoResult[0][0].status_type;
+
+			if (cpoStatus !== "SUCCESS" && cpoStatusType === "bad_request")
+				throw new HttpBadRequest(cpoStatus, []);
+
+			const email = new Email(data.contact_email, {
+				party_id,
+				token_c,
+				cpo_owner_id: cpoResult[0][0].cpo_owner_id,
+			});
+
+			await email.SendFindEVPlugCredentials();
+			return cpoStatus;
+		} catch (err) {
+			throw err;
+		}
+	}
+
+	async RegisterLocationAndEVSEs(data) {
 		/**
 		 * @type {import('mysql2').PoolConnection}
 		 */
@@ -18,25 +50,13 @@ module.exports = class CPOService {
 		try {
 			connection = await this.#repository.GetConnection();
 
-			// Generate CPO's party ID.
-			const party_id = await this.#GeneratePartyID(data.cpo_owner_name);
 			const location = data.location;
 			const evses = data.evses;
-
-			const token_c = Crypto.Encrypt(JSON.stringify({ party_id }));
-
-			const cpoResult = await this.#repository.RegisterCPO(
-				{
-					...data,
-					party_id,
-				},
-				connection
-			);
 
 			// Request to Google Geocoding API for the data based on the address provided.
 			const geocodedAddress = await axios.get(
 				`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURI(
-					location.address
+					data.address
 				)}&key=${process.env.GOOGLE_GEO_API_KEY}`
 			);
 
@@ -84,17 +104,11 @@ module.exports = class CPOService {
 			const formatted_address =
 				geocodedAddress.data.results[0].formatted_address;
 
-			const cpoStatus = cpoResult[0][0].STATUS;
-			const cpoStatusType = cpoResult[0][0].status_type;
-
-			if (cpoStatus !== "SUCCESS" && cpoStatusType === "bad_request")
-				throw new HttpBadRequest(cpoStatus, []);
-
 			// Add a location
 			const locationResult = await this.#repository.RegisterLocation(
 				{
-					cpo_owner_id: cpoResult[0][0].cpo_owner_id,
-					name: location.name,
+					cpo_owner_id: data.cpo_owner_id,
+					name: data.name,
 					address: formatted_address,
 					lat,
 					lng,
