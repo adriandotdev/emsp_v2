@@ -1,7 +1,7 @@
 const CPORepository = require("../repository/CPORepository");
 const Crypto = require("../utils/Crypto");
 const { HttpBadRequest } = require("../utils/HttpError");
-
+const axios = require("axios");
 module.exports = class CPOService {
 	#repository;
 
@@ -10,25 +10,134 @@ module.exports = class CPOService {
 	}
 
 	async RegisterCPO(data) {
+		/**
+		 * @type {import('mysql2').PoolConnection}
+		 */
+		let connection = null;
+
 		try {
+			connection = await this.#repository.GetConnection();
+
+			// Generate CPO's party ID.
 			const party_id = await this.#GeneratePartyID(data.cpo_owner_name);
+			const location = data.location;
+			const evses = data.evses;
 
 			const token_c = Crypto.Encrypt(JSON.stringify({ party_id }));
 
-			const result = await this.#repository.RegisterCPO({
-				...data,
-				party_id,
-			});
+			const cpoResult = await this.#repository.RegisterCPO(
+				{
+					...data,
+					party_id,
+				},
+				connection
+			);
 
-			const status = result[0][0].STATUS;
-			const status_type = result[0][0].status_type;
+			// Request to Google Geocoding API for the data based on the address provided.
+			const geocodedAddress = await axios.get(
+				`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURI(
+					location.address
+				)}&key=${process.env.GOOGLE_GEO_API_KEY}`
+			);
 
-			if (status !== "SUCCESS" && status_type === "bad_request")
-				throw new HttpBadRequest(status, []);
+			/**
+			 * Get the address_components object
+			 *
+			 * This object contains all of the details related to a address such as municipality, region, and postal code.
+			 */
+			const address_components =
+				geocodedAddress.data.results[0]?.address_components;
 
-			return status;
+			if (!address_components)
+				throw new HttpBadRequest("LOCATION_NOT_FOUND", []);
+
+			// Get the city name when the type is 'locality'
+			const city = address_components.find((component) =>
+				component.types.includes("locality")
+			)?.long_name;
+
+			/**
+			 * Get the region name when the type is 'administrative_area_level_1'
+			 *
+			 * Get the first three letters of the region, convert it to uppercase, and trim it.
+			 */
+			const region = String(
+				address_components.find((component) =>
+					component.types.includes("administrative_area_level_1")
+				)?.short_name
+			)
+				.slice(0, 3)
+				.toUpperCase()
+				.trim();
+
+			/**
+			 * Get the postal code of the address when the type is 'postal_code'
+			 */
+			const postal_code = address_components.find((component) =>
+				component.types.includes("postal_code")
+			)?.long_name;
+
+			// Get the latitude, and longitude of the address
+			const { lat, lng } = geocodedAddress.data.results[0].geometry.location;
+
+			// Get the formatted address.
+			const formatted_address =
+				geocodedAddress.data.results[0].formatted_address;
+
+			const cpoStatus = cpoResult[0][0].STATUS;
+			const cpoStatusType = cpoResult[0][0].status_type;
+
+			if (cpoStatus !== "SUCCESS" && cpoStatusType === "bad_request")
+				throw new HttpBadRequest(cpoStatus, []);
+
+			// Add a location
+			const locationResult = await this.#repository.RegisterLocation(
+				{
+					cpo_owner_id: cpoResult[0][0].cpo_owner_id,
+					name: location.name,
+					address: formatted_address,
+					lat,
+					lng,
+					city,
+					region,
+					postal_code,
+					images: JSON.stringify([]),
+				},
+				connection
+			);
+
+			for (const evse of evses) {
+				const evseResult = await this.#repository.RegisterEVSE(
+					{
+						uid: evse.uid,
+						serial_number: evse.uid,
+						meter_type: evse.meter_type,
+						location_id: locationResult.insertId,
+					},
+					connection
+				);
+
+				const transformedConnectors = evse.connectors.map((connector) => ({
+					...connector,
+					rate_setting: evse.kwh,
+				}));
+
+				const connectorResult = await this.#repository.AddConnector(
+					evse.uid,
+					transformedConnectors,
+					connection
+				);
+
+				console.log(connectorResult);
+			}
+			connection.commit();
+
+			return cpoStatus;
 		} catch (err) {
+			if (connection) connection.rollback();
 			throw err;
+		} finally {
+			if (connection) connection.release();
 		}
 	}
 

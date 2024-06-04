@@ -119,7 +119,7 @@ module.exports = (app, upload) => {
 			API_REQUEST_ERROR: {
 				error_name: req.error_name || "UNKNOWN_ERROR",
 				message: err.message,
-				stack: err.stack.replace(/\\/g, "/"), // Include stack trace for debugging
+				stack: err.stack?.replace(/\\/g, "/"), // Include stack trace for debugging
 				request: {
 					method: req.method,
 					url: req.url,
