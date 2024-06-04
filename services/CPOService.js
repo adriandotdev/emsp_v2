@@ -146,7 +146,7 @@ module.exports = class CPOService {
 			}
 			connection.commit();
 
-			return cpoStatus;
+			return "SUCCESS";
 		} catch (err) {
 			if (connection) connection.rollback();
 			throw err;

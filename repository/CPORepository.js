@@ -32,7 +32,7 @@ module.exports = class CPORepository {
 
 	RegisterCPO(data) {
 		const QUERY = `
-            CALL EMSP_REGISTER_CPO(?,?,?,?,?,?,?,?)
+            CALL EMSP_REGISTER_CPO(?,?,?,?,?,?,?,?,?)
         `;
 
 		return new Promise((resolve, reject) => {
@@ -47,6 +47,7 @@ module.exports = class CPORepository {
 					data.contact_email,
 					data.ocpp_ready,
 					data.token_c,
+					data.logo,
 				],
 				(err, result) => {
 					if (err) {

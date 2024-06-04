@@ -68,6 +68,7 @@ module.exports = (app, upload) => {
 				.withMessage(
 					"Invalid value for occp_ready: It must be in boolean type"
 				),
+			body("logo").notEmpty().withMessage("Missing required property: logo"),
 		],
 
 		/**
@@ -99,6 +100,109 @@ module.exports = (app, upload) => {
 		}
 	);
 
+	app.post(
+		"/emsp/api/v1/locations",
+		[
+			body("party_id")
+				.notEmpty()
+				.withMessage("Missing required property: party_id")
+				.custom((value) => String(value).length === 3)
+				.withMessage("Party ID length must be equal to 3")
+				.custom((value) => value === String(value).toUpperCase())
+				.withMessage("Party ID must be uppercase"),
+			body("name")
+				.notEmpty()
+				.withMessage("Missing required property: name (Location name"),
+			body("address")
+				.notEmpty()
+				.withMessage("Missing required property: address"),
+			body("evses")
+				.notEmpty()
+				.withMessage("Missing required property: evses")
+				.isArray()
+				.withMessage("EVSEs must be type of array"),
+			body("evses.*.uid")
+				.notEmpty()
+				.withMessage("Missing evse property: uid")
+				.custom((value) => typeof value === "string")
+				.withMessage("EVSE uid must be type of string"),
+			body("evses.*.status")
+				.notEmpty()
+				.withMessage("Missing evse property: status")
+				.custom((value) =>
+					["AVAILABLE", "OFFLINE", "CHARGING", "RESERVED"].includes(value)
+				)
+				.withMessage(
+					"Invalid EVSE status. Valid statuses are: [AVAILABLE, OFFLINE, CHARGING, RESERVED]"
+				),
+			body("evses.*.meter_type")
+				.notEmpty()
+				.withMessage("Missing evse property: meter_type")
+				.custom((value) => ["AC", "DC"].includes(value))
+				.withMessage(
+					"Invalid EVSE meter type. Valid meter types are: [AC, DC]"
+				),
+			body("evses.*.kwh")
+				.notEmpty()
+				.withMessage("Missing evse property: kwh")
+				.custom((value) => typeof value === "number"),
+			body("evses.*.connectors")
+				.notEmpty()
+				.withMessage("Missing evse property: connectors")
+				.isArray()
+				.withMessage("Connectors must be array type"),
+			body("evses.*.connectors.*.standard")
+				.notEmpty()
+				.withMessage("Missing connector property: standard"),
+			body("evses.*.connectors.*.format")
+				.notEmpty()
+				.withMessage("Missing connector property: format"),
+			body("evses.*.connectors.*.power_type")
+				.notEmpty()
+				.withMessage("Missing connector property: power_type"),
+			body("evses.*.connectors.*.max_voltage")
+				.notEmpty()
+				.withMessage("Missing connector property: max_voltage"),
+			body("evses.*.connectors.*.max_amperage")
+				.notEmpty()
+				.withMessage("Missing connector property: max_amperage"),
+			body("evses.*.connectors.*.max_electric_power")
+				.notEmpty()
+				.withMessage("Missing connector property: max_electric_power"),
+		],
+		/**
+		 * @param {import('express').Request} req
+		 * @param {import('express').Response} res
+		 */
+		async (req, res, next) => {
+			try {
+				logger.info({
+					REGISTER_LOCATIONS_AND_EVSE_REQUEST: {
+						data: {
+							...req.body,
+						},
+						message: "SUCCESS",
+					},
+				});
+
+				validate(req, res);
+				// const result = await service.RegisterLocationAndEVSEs({ ...req.body });
+
+				logger.info({
+					REGISTER_LOCATIONS_AND_EVSE_RESPONSE: {
+						message: "SUCCESS",
+					},
+				});
+
+				return res
+					.status(200)
+					.json({ status: 200, data: [], message: "SUCCESS" });
+			} catch (err) {
+				req.error_name = "REGISTER_LOCATIONS_AND_EVSE_ERROR";
+				next(err);
+			}
+		}
+	);
 	app.post(
 		"/emsp/api/v1/cpo/upload",
 		[tokenMiddleware.BasicTokenVerifier(), upload.single("cpo_logo")],
