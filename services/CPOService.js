@@ -143,6 +143,10 @@ module.exports = class CPOService {
 					connection
 				);
 
+				if (evseResult[0][0].status_type === "bad_request") {
+					throw new HttpBadRequest(evseResult[0][0].STATUS, []);
+				}
+
 				const transformedConnectors = evse.connectors.map((connector) => ({
 					...connector,
 					rate_setting: evse.kwh,
@@ -158,8 +162,9 @@ module.exports = class CPOService {
 			}
 			connection.commit();
 
-			return "SUCCESS";
+			return { location_id: locationResult.insertId };
 		} catch (err) {
+			console.log(err);
 			if (connection) connection.rollback();
 			throw err;
 		} finally {

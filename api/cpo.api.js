@@ -33,7 +33,7 @@ module.exports = (app, upload) => {
 	}
 
 	app.post(
-		"/ocpi/cpo/api/2.2/register",
+		"/ocpi/cpo/2.2/register",
 		[
 			tokenMiddleware.BasicTokenVerifier(),
 			body("username")
@@ -101,7 +101,7 @@ module.exports = (app, upload) => {
 	);
 
 	app.post(
-		"/ocpi/cpo/api/2.2/locations/:country_code/:party_id",
+		"/ocpi/cpo/2.2/locations/:country_code/:party_id",
 		[
 			tokenMiddleware.VerifyCPOToken(),
 			body("name")
@@ -201,7 +201,7 @@ module.exports = (app, upload) => {
 		}
 	);
 	app.post(
-		"/emsp/api/v1/cpo/upload",
+		"/ocpi/cpo/2.2/cpo/upload",
 		[tokenMiddleware.BasicTokenVerifier(), upload.single("cpo_logo")],
 		/**
 		 * @param {import('express').Request} req

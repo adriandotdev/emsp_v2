@@ -77,7 +77,7 @@ module.exports = class Email {
 			});
 		} catch (err) {
 			winston.error({ CLASS_EMAIL_SEND_OTP_METHOD: { err } });
-			throw new Error({ connection: data.connection });
+			throw err;
 		}
 	}
 };
