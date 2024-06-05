@@ -103,6 +103,7 @@ module.exports = (app, upload) => {
 	app.post(
 		"/emsp/api/v1/locations",
 		[
+			tokenMiddleware.VerifyCPOToken(),
 			body("party_id")
 				.notEmpty()
 				.withMessage("Missing required property: party_id")

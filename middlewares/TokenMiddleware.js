@@ -276,4 +276,32 @@ module.exports = class TokenMiddleware {
 			}
 		};
 	}
+
+	VerifyCPOToken() {
+		/**
+		 * @param {import('express').Request} req
+		 */
+		return async (req, res, next) => {
+			try {
+				const securityType = req.headers["authorization"]?.split(" ")[0];
+				const token = req.headers["authorization"]?.split(" ")[1];
+
+				if (!token) throw new HttpUnauthorized("Unauthorized", []);
+
+				if (securityType !== "Bearer")
+					throw new HttpUnauthorized("Unauthorized", []);
+
+				const party_id = req.body.party_id;
+
+				const decodedToken = JSON.parse(Crypto.Decrypt(token));
+
+				if (decodedToken.party_id !== party_id)
+					throw new HttpForbidden("Forbidden", []);
+
+				next();
+			} catch (err) {
+				next(err);
+			}
+		};
+	}
 };
