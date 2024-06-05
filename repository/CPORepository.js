@@ -30,6 +30,45 @@ module.exports = class CPORepository {
 		});
 	}
 
+	CheckIfCPOExistsByName(cpoOwnerName) {
+		const QUERY = `
+
+			SELECT party_id, cpo_owner_name, token_c 
+			FROM cpo_owners 
+			WHERE LOWER(cpo_owner_name) = LOWER(?);
+		`;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, [cpoOwnerName], (err, result) => {
+				if (err) {
+					reject(err);
+				}
+
+				resolve(result);
+			});
+		});
+	}
+
+	GetCPOOwnerIDByPartyID(partyID) {
+		const QUERY = `
+			SELECT 
+				id
+			FROM 
+				cpo_owners
+			WHERE party_id = ?
+		`;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, [partyID], (err, result) => {
+				if (err) {
+					reject(err);
+				}
+
+				resolve(result);
+			});
+		});
+	}
+
 	RegisterCPO(data) {
 		const QUERY = `
             CALL EMSP_REGISTER_CPO(?,?,?,?,?,?,?,?,?)
@@ -47,7 +86,7 @@ module.exports = class CPORepository {
 					data.contact_email,
 					data.ocpp_ready,
 					data.token_c,
-					data.logo,
+					data.logo || "default.svg",
 				],
 				(err, result) => {
 					if (err) {

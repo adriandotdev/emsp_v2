@@ -13,8 +13,20 @@ module.exports = class CPOService {
 
 	async RegisterCPO(data) {
 		try {
-			const party_id = await this.#GeneratePartyID(data.cpo_owner_name);
-			const token_c = Crypto.Encrypt(JSON.stringify({ party_id }));
+			const result = await this.#repository.CheckIfCPOExistsByName(
+				data.cpo_owner_name
+			);
+
+			let party_id = null;
+			let token_c = null;
+
+			if (result.length) {
+				party_id = result[0].party_id;
+				token_c = result[0].token_c;
+			} else {
+				party_id = await this.#GeneratePartyID(data.cpo_owner_name);
+				token_c = Crypto.Encrypt(JSON.stringify({ party_id }));
+			}
 
 			const cpoResult = await this.#repository.RegisterCPO({
 				...data,
@@ -50,8 +62,8 @@ module.exports = class CPOService {
 		try {
 			connection = await this.#repository.GetConnection();
 
-			const location = data.location;
 			const evses = data.evses;
+			const cpo = await this.#repository.GetCPOOwnerIDByPartyID(data.party_id);
 
 			// Request to Google Geocoding API for the data based on the address provided.
 			const geocodedAddress = await axios.get(
@@ -107,7 +119,7 @@ module.exports = class CPOService {
 			// Add a location
 			const locationResult = await this.#repository.RegisterLocation(
 				{
-					cpo_owner_id: data.cpo_owner_id,
+					cpo_owner_id: cpo[0].id,
 					name: data.name,
 					address: formatted_address,
 					lat,

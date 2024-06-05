@@ -291,16 +291,19 @@ module.exports = class TokenMiddleware {
 				if (securityType !== "Bearer")
 					throw new HttpUnauthorized("Unauthorized", []);
 
-				const party_id = req.body.party_id;
+				const party_id = req.params.party_id;
 
 				const decodedToken = JSON.parse(Crypto.Decrypt(token));
 
 				if (decodedToken.party_id !== party_id)
 					throw new HttpForbidden("Forbidden", []);
 
+				req.party_id = party_id;
+
 				next();
 			} catch (err) {
 				next(err);
+				req.error_name = "VERIFY_CPO_TOKEN_ERROR";
 			}
 		};
 	}

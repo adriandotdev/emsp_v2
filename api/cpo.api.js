@@ -33,7 +33,7 @@ module.exports = (app, upload) => {
 	}
 
 	app.post(
-		"/emsp/api/v1/cpo/register",
+		"/ocpi/cpo/api/2.2/register",
 		[
 			tokenMiddleware.BasicTokenVerifier(),
 			body("username")
@@ -68,7 +68,7 @@ module.exports = (app, upload) => {
 				.withMessage(
 					"Invalid value for occp_ready: It must be in boolean type"
 				),
-			body("logo").notEmpty().withMessage("Missing required property: logo"),
+			body("logo").optional(),
 		],
 
 		/**
@@ -101,16 +101,9 @@ module.exports = (app, upload) => {
 	);
 
 	app.post(
-		"/emsp/api/v1/locations",
+		"/ocpi/cpo/api/2.2/locations/:country_code/:party_id",
 		[
 			tokenMiddleware.VerifyCPOToken(),
-			body("party_id")
-				.notEmpty()
-				.withMessage("Missing required property: party_id")
-				.custom((value) => String(value).length === 3)
-				.withMessage("Party ID length must be equal to 3")
-				.custom((value) => value === String(value).toUpperCase())
-				.withMessage("Party ID must be uppercase"),
 			body("name")
 				.notEmpty()
 				.withMessage("Missing required property: name (Location name"),
@@ -187,7 +180,10 @@ module.exports = (app, upload) => {
 				});
 
 				validate(req, res);
-				// const result = await service.RegisterLocationAndEVSEs({ ...req.body });
+				const result = await service.RegisterLocationAndEVSEs({
+					...req.body,
+					party_id: req.party_id,
+				});
 
 				logger.info({
 					REGISTER_LOCATIONS_AND_EVSE_RESPONSE: {
@@ -197,7 +193,7 @@ module.exports = (app, upload) => {
 
 				return res
 					.status(200)
-					.json({ status: 200, data: [], message: "SUCCESS" });
+					.json({ status: 200, data: result, message: "SUCCESS" });
 			} catch (err) {
 				req.error_name = "REGISTER_LOCATIONS_AND_EVSE_ERROR";
 				next(err);

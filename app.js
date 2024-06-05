@@ -47,6 +47,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("combined", { stream: logger.stream }));
 app.use(cookieParser());
+app.use("/images", express.static(path.join(__dirname, "public/images")));
 
 const storage = multer.diskStorage({
 	destination: function (req, file, cb) {

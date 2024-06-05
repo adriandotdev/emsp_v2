@@ -35,19 +35,29 @@ module.exports = class Email {
 		});
 
 		try {
-			let htmlFormat = `
-			  <h1>Find EV Plug PH</h1>
-	
-			  <h2>Please do not share this details to anyone</h2>
-			  <h3>Party ID</h3>
-			  ${this._data.party_id}
-			  <h3>Token C</h3>
-			  ${this._data.token_c}
-			  <h3>Charging Point Operator ID</h3>
-			  ${this._data.cpo_owner_id}
+			const htmlFormat = `
+				<h1>Find EV Plug PH</h1>
 
-			  <p>Kind regards,</p>
-			  <p><b>Find EV Plug PH</b></p>
+				<p>Dear User,</p>
+
+				<p>Please be informed that the following details are confidential. Kindly do not share this information with anyone.</p>
+
+				<h3>Party ID</h3>
+				<p>${this._data.party_id}</p>
+				
+				<h3>Token C</h3>
+				<p>${this._data.token_c}</p>
+				
+				<h3>Charging Point Operator ID</h3>
+				<p>${this._data.cpo_owner_id}</p>
+
+				<h3>Country Code</h3>
+				<p>PH</p>
+
+				<p>Thank you for your cooperation.</p>
+
+				<p>Kind regards,</p>
+				<p><b>Find EV Plug PH</b></p>
 			`;
 
 			let textFormat = `N/A`;
