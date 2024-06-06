@@ -36,23 +36,18 @@ module.exports = class Email {
 
 		try {
 			const htmlFormat = `
-				<h1>Find EV Plug PH</h1>
-
-				<p>Dear User,</p>
+				<h1>Welcome to Find EV Plug PH</h1>
+				<h2><p>NOTE: This platform currently accessible is merely the staging iteration of findevplug.ph.</p></h2>
+				
+				<p>Good day, CPO</p>
 
 				<p>Please be informed that the following details are confidential. Kindly do not share this information with anyone.</p>
 
-				<h3>Party ID</h3>
-				<p>${this._data.party_id}</p>
+				<h3>Party ID: ${this._data.party_id}</h3>
 				
-				<h3>Token C</h3>
-				<p>${this._data.token_c}</p>
-				
-				<h3>Charging Point Operator ID</h3>
-				<p>${this._data.cpo_owner_id}</p>
+				<h3>Token C: ${this._data.token_c}</h3>
 
-				<h3>Country Code</h3>
-				<p>PH</p>
+				<h3>Country Code: PH</h3>
 
 				<p>Thank you for your cooperation.</p>
 

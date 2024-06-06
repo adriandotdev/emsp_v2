@@ -132,9 +132,9 @@ module.exports = class CPORepository {
 		const QUERY = `
 			INSERT INTO 
 				cpo_locations 
-					(cpo_owner_id, name, address, address_lat, address_lng, city, region, postal_code, images, date_created, date_modified)
+					(cpo_owner_id, name, address, address_lat, address_lng, city, region, postal_code, country_code, images, date_created, date_modified)
 			VALUES 
-					(?,?,?,?,?,?,?,?,?, NOW(), NOW());
+					(?,?,?,?,?,?,?,?,?,?, NOW(), NOW());
 		`;
 
 		return new Promise((resolve, reject) => {
@@ -149,6 +149,7 @@ module.exports = class CPORepository {
 					city,
 					region,
 					postal_code,
+					"PH",
 					images,
 				],
 				(err, result) => {
