@@ -65,6 +65,8 @@ module.exports = class CPOService {
 			const evses = data.evses;
 			const cpo = await this.#repository.GetCPOOwnerIDByPartyID(data.party_id);
 
+			if (!cpo[0]) throw new HttpBadRequest("PARTY_ID_NOT_EXISTS", []);
+
 			// Request to Google Geocoding API for the data based on the address provided.
 			const geocodedAddress = await axios.get(
 				`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURI(
