@@ -1,3 +1,6 @@
+const path = require("path");
+const fs = require("fs");
+const { parse } = require("csv");
 const LocationRepository = require("../repository/LocationRepository");
 
 const axios = require("axios");
@@ -340,5 +343,91 @@ module.exports = class LocationService {
 		);
 
 		return result;
+	}
+
+	ReadCSVFile(filename) {
+		return new Promise((resolve, reject) => {
+			const filePath = path.join("public", "csv", filename);
+			const data = [];
+
+			fs.createReadStream(filePath)
+				.pipe(parse({ delimiter: ",", from_line: 2 }))
+				.on("data", (row) => {
+					data.push(row);
+				})
+				.on("end", () => {
+					fs.unlinkSync(filePath);
+
+					const result = [];
+
+					// Helper function to find an evse by uid
+					const findEvseByUid = (evses, uid) =>
+						evses.find((evse) => evse.uid === uid);
+
+					// Process the data
+					data.forEach((entry) => {
+						const [
+							location,
+							address,
+							lat,
+							lng,
+							stationId,
+							status,
+							meterType,
+							kwh,
+							standard,
+							format,
+							powerType,
+							maxVoltage,
+							maxAmperage,
+							maxElectricPower,
+						] = entry;
+
+						// Find or create the location object
+						let locationObj = result.find(
+							(loc) => loc.name === location && loc.address === address
+						);
+						if (!locationObj) {
+							locationObj = {
+								name: location,
+								address: address,
+								lat,
+								lng,
+								evses: [],
+							};
+							result.push(locationObj);
+						}
+
+						// Find or create the evse object
+						let evseObj = findEvseByUid(locationObj.evses, stationId);
+
+						if (!evseObj) {
+							evseObj = {
+								uid: stationId,
+								status: status,
+								meter_type: meterType,
+								kwh: parseFloat(kwh),
+								connectors: [],
+							};
+							locationObj.evses.push(evseObj);
+						}
+
+						// Add the connector
+						evseObj.connectors.push({
+							standard: standard,
+							format: format,
+							power_type: powerType,
+							max_voltage: parseFloat(maxVoltage),
+							max_amperage: parseFloat(maxAmperage),
+							max_electric_power: parseFloat(maxElectricPower),
+						});
+					});
+
+					resolve(result);
+				})
+				.on("error", (err) => {
+					reject(err);
+				});
+		});
 	}
 };

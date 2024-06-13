@@ -114,7 +114,14 @@ module.exports = (app, upload) => {
 				.notEmpty()
 				.withMessage("Missing required property: evses")
 				.isArray()
-				.withMessage("EVSEs must be type of array"),
+				.withMessage("EVSEs must be type of array")
+				.custom((value) => {
+					if (value.length !== 1)
+						throw new Error("EVSE array must contain exactly one (1) element.");
+
+					return true;
+				})
+				.withMessage("EVSEs must contain exactly one (1)."),
 			body("evses.*.uid")
 				.notEmpty()
 				.withMessage("Missing evse property: uid")
@@ -144,7 +151,16 @@ module.exports = (app, upload) => {
 				.notEmpty()
 				.withMessage("Missing evse property: connectors")
 				.isArray()
-				.withMessage("Connectors must be array type"),
+				.withMessage("Connectors must be array type")
+				.custom((value) => {
+					if (value.length !== 1) {
+						throw new Error(
+							"EVSE Connectors must contain exactly one (1) element."
+						);
+					}
+
+					return true;
+				}),
 			body("evses.*.connectors.*.standard")
 				.notEmpty()
 				.withMessage("Missing connector property: standard"),
@@ -180,6 +196,7 @@ module.exports = (app, upload) => {
 				});
 
 				validate(req, res);
+
 				const result = await service.RegisterLocationAndEVSEs({
 					...req.body,
 					party_id: req.party_id,

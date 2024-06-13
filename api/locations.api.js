@@ -14,10 +14,14 @@ const {
 	HttpBadRequest,
 } = require("../utils/HttpError");
 
+const fs = require("fs");
+const path = require("path");
+const { parse } = require("csv");
 /**
  * @param {import('express').Express} app
+ * @param {import('multer').Multer} csvUpload
  */
-module.exports = (app, upload) => {
+module.exports = (app, csvUpload, upload) => {
 	const service = new LocationService();
 	const tokenMiddleware = new TokenMiddleware();
 	const roleMiddleware = new RoleManagementMiddleware();
@@ -37,6 +41,28 @@ module.exports = (app, upload) => {
 			);
 		}
 	}
+
+	app.post(
+		"/ocpi/cpo/api/v1/locations/uploads/csv",
+		[csvUpload.single("file")],
+
+		/**
+		 * @param {import('express').Request} req
+		 * @param {import('express').Response} res
+		 */
+		async (req, res, next) => {
+			try {
+				const result = await service.ReadCSVFile(req.file.filename);
+				console.log(result);
+				return res
+					.status(200)
+					.json({ status: 200, data: result, message: "Success" });
+			} catch (err) {
+				req.error_name = "CSV_UPLOAD_ERROR";
+				next(err);
+			}
+		}
+	);
 
 	app.get(
 		"/emsp/api/v1/locations",

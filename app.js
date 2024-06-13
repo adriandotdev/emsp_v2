@@ -22,6 +22,7 @@ const multer = require("multer");
 // Loggers
 const morgan = require("morgan");
 const logger = require("./config/winston");
+const { HttpBadRequest } = require("./utils/HttpError");
 
 // Global Middlewares
 const swaggerDocument = YAML.load("./swagger.yaml");
@@ -78,18 +79,54 @@ const allowedFileTypes = (req, file, cb) => {
 	}
 };
 
+const allowedFileType = (req, file, cb) => {
+	const fileTypes = [".csv"];
+
+	const isFileTypeValid = fileTypes.includes(
+		path.extname(file.originalname).toLowerCase()
+	);
+
+	if (isFileTypeValid) {
+		return cb(null, true);
+	} else {
+		// cb(
+		// 	new multer.MulterError(
+		// 		"Invalid file types. Please upload png or svg files with maximum 80 kilobytes in size."
+		// 	)
+		// );
+		throw new HttpBadRequest("INVALID_FILE_TYPE");
+	}
+};
+
+const csvStorage = multer.diskStorage({
+	destination: function (req, file, cb) {
+		cb(null, path.join(__dirname, "public", "csv"));
+	},
+	filename: function (req, file, cb) {
+		const date = Date.now();
+		const uploadFileName = file.originalname;
+		cb(null, uploadFileName);
+	},
+});
+
 const upload = multer({
 	storage: storage,
 	fileFilter: allowedFileTypes,
 	limits: { files: 5 },
 });
 
+const csvUpload = multer({
+	storage: csvStorage,
+	fileFilter: allowedFileType,
+	limits: { files: 1 },
+});
 /**
  * Import all of your routes below
  */
 // Import here
 require("./api/accounts.api")(app);
 require("./api/cpo.api")(app, upload);
+require("./api/locations.api")(app, csvUpload, upload);
 
 app.use("*", (req, res, next) => {
 	logger.error({
