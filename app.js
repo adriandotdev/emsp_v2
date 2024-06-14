@@ -127,6 +127,7 @@ const csvUpload = multer({
 require("./api/accounts.api")(app);
 require("./api/cpo.api")(app, upload);
 require("./api/locations.api")(app, csvUpload, upload);
+require("./api/filters.api")(app);
 
 app.use("*", (req, res, next) => {
 	logger.error({
