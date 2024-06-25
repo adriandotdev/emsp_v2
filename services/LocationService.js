@@ -381,6 +381,12 @@ module.exports = class LocationService {
 							maxVoltage,
 							maxAmperage,
 							maxElectricPower,
+							facilities,
+
+							parking_types,
+							parking_restrictions,
+							capabilities,
+							payment_types,
 						] = entry;
 
 						// Find or create the location object
@@ -394,6 +400,15 @@ module.exports = class LocationService {
 								lat,
 								lng,
 								evses: [],
+								facilities: facilities
+									? JSON.parse(facilities.slice(1, -1))
+									: [],
+								parking_types: parking_types
+									? JSON.parse(parking_types.slice(1, -1))
+									: [],
+								parking_restrictions: parking_restrictions
+									? JSON.parse(parking_restrictions.slice(1, -1))
+									: [],
 							};
 							result.push(locationObj);
 						}
@@ -408,6 +423,12 @@ module.exports = class LocationService {
 								meter_type: meterType,
 								kwh: parseFloat(kwh),
 								connectors: [],
+								capabilities: capabilities
+									? JSON.parse(capabilities.slice(1, -1))
+									: [],
+								payment_types: payment_types
+									? JSON.parse(payment_types.slice(1, -1))
+									: [],
 							};
 							locationObj.evses.push(evseObj);
 						}
