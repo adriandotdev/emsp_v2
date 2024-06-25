@@ -59,7 +59,7 @@ module.exports = (app) => {
 	 * This API will be used to authenticate the user by providing their username, and password.
 	 */
 	app.post(
-		"/emsp/api/auth/v1/login",
+		"/ocpi/cpo/api/auth/v1/login",
 		[
 			tokenMiddleware.BasicTokenVerifier(),
 			body("username")
@@ -101,7 +101,7 @@ module.exports = (app) => {
 	 * @API /api/auth/v1/logout */
 
 	app.post(
-		"/emsp/api/auth/v1/logout",
+		"/ocpi/cpo/api/auth/v1/logout",
 		tokenMiddleware.AccessTokenVerifier(),
 		async (req, res, next) => {
 			logger.info({
@@ -130,7 +130,7 @@ module.exports = (app) => {
 	);
 
 	app.get(
-		"/emsp/api/auth/v1/refresh",
+		"/ocpi/cpo/api/auth/v1/refresh",
 		tokenMiddleware.RefreshTokenVerifier(),
 		async (req, res, next) => {
 			logger.info({
