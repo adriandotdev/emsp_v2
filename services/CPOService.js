@@ -3,6 +3,7 @@ const Crypto = require("../utils/Crypto");
 const { HttpBadRequest } = require("../utils/HttpError");
 const axios = require("axios");
 const Email = require("../utils/Email");
+const generator = require("generate-password");
 
 module.exports = class CPOService {
 	#repository;
@@ -19,6 +20,7 @@ module.exports = class CPOService {
 
 			let party_id = null;
 			let token_c = null;
+			let password = generator.generate({ length: 8, numbers: true });
 
 			if (result.length) {
 				party_id = result[0].party_id;
@@ -32,6 +34,7 @@ module.exports = class CPOService {
 				...data,
 				party_id,
 				token_c,
+				password,
 			});
 
 			const cpoStatus = cpoResult[0][0].STATUS;
@@ -44,6 +47,8 @@ module.exports = class CPOService {
 				party_id,
 				token_c,
 				cpo_owner_id: cpoResult[0][0].cpo_owner_id,
+				username: data.username,
+				temporary_password: password,
 			});
 
 			await email.SendFindEVPlugCredentials();

@@ -217,6 +217,7 @@ module.exports = (app, upload) => {
 			}
 		}
 	);
+
 	app.post(
 		"/ocpi/cpo/2.2/cpo/upload",
 		[tokenMiddleware.BasicTokenVerifier(), upload.single("cpo_logo")],
