@@ -399,10 +399,7 @@ module.exports = (app, upload) => {
 
 	app.get(
 		"/emsp/api/v1/locations/:name/:limit/:offset",
-		[
-			tokenMiddleware.AccessTokenVerifier(),
-			roleMiddleware.CheckRole(ROLES.ADMIN_NOC, ROLES.ADMIN_MARKETING),
-		],
+		[tokenMiddleware.AccessTokenVerifier()],
 		/**
 		 * @param {import('express').Request} req
 		 * @param {import('express').Response} res

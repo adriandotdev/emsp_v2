@@ -39,6 +39,7 @@ app.use(
 			"https://v2-stg-parkncharge.sysnetph.com",
 			"https://stg-cpo.sysnetph.com",
 			"https://stg-findevplug.sysnetph.com",
+			"https://findevplug.ph",
 		],
 		methods: ["OPTIONS", "GET", "POST", "PUT", "DELETE", "PATCH"],
 	})

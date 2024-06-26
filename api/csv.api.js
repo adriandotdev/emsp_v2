@@ -3,16 +3,19 @@ const logger = require("../config/winston");
 const CSVService = require("../services/CSVService");
 const CSVRepository = require("../repository/CSVRepository");
 
+const TokenMiddleware = require("../middlewares/TokenMiddleware");
+
 /**
  * @param {import('express').Express} app
  * @param {import('multer').Multer} csvUpload
  */
 module.exports = (app, csvUpload) => {
 	const service = new CSVService(new CSVRepository());
+	const tokenMiddleware = new TokenMiddleware();
 
 	app.post(
-		"/ocpi/cpo/api/v1/locations/uploads/csv",
-		[csvUpload.single("file")],
+		"/ocpi/cpo/api/v1/locations/uploads/csv/:party_id",
+		[tokenMiddleware.VerifyCPOToken(), csvUpload.single("file")],
 
 		/**
 		 * @param {import('express').Request} req
@@ -20,11 +23,16 @@ module.exports = (app, csvUpload) => {
 		 */
 		async (req, res, next) => {
 			try {
-				const result = await service.ReadCSVFile(req.file.filename);
-				console.log(result);
+				// Read CSV, and transform into JSON
+				const locations = await service.ReadCSVFile(req.file.filename);
+				const result = await service.RegisterAllLocationsAndEVSEs(
+					req.party_id,
+					locations
+				);
+
 				return res
 					.status(200)
-					.json({ status: 200, data: result, message: "Success" });
+					.json({ status: 200, data: locations, message: "Success" });
 			} catch (err) {
 				req.error_name = "CSV_UPLOAD_ERROR";
 				next(err);
