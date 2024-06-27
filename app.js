@@ -27,6 +27,10 @@ const { HttpBadRequest } = require("./utils/HttpError");
 // Global Middlewares
 const swaggerDocument = YAML.load("./swagger.yaml");
 
+// Graphql setup
+const { createHandler } = require("graphql-http/lib/use/express");
+const schema = require("./graphql/schema");
+
 app.use("/login/docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 app.use(helmet());
 app.use(helmet.frameguard({ action: "deny" }));
@@ -130,6 +134,8 @@ require("./api/accounts.api")(app);
 require("./api/cpo.api")(app, upload);
 require("./api/filters.api")(app);
 require("./api/csv.api")(app, csvUpload);
+
+app.use("/ocpi/cpo/graphql", createHandler({ schema }));
 
 app.use("*", (req, res, next) => {
 	logger.error({
