@@ -14,7 +14,7 @@ module.exports = (app, csvUpload) => {
 	const tokenMiddleware = new TokenMiddleware();
 
 	app.post(
-		"/ocpi/cpo/api/v1/locations/uploads/csv/:party_id",
+		"/ocpi/cpo/api/v1/locations/uploads/csv",
 		[tokenMiddleware.AccessTokenVerifier(), csvUpload.single("file")],
 
 		/**
