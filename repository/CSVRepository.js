@@ -33,6 +33,27 @@ module.exports = class CSVRepository {
 		});
 	}
 
+	SearchLocationByName(name) {
+		const QUERY = `
+			SELECT
+				id,
+				name
+			FROM
+				cpo_locations
+			WHERE 
+				LOWER(name) = LOWER(?)
+			LIMIT 1
+		`;
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, [name], (err, result) => {
+				if (err) {
+					reject(err);
+				}
+				resolve(result);
+			});
+		});
+	}
+
 	/**
 	 * Registers a new location.
 	 *

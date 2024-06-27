@@ -183,9 +183,6 @@ module.exports = class CSVService {
 	RegisterLocationAndEVSEs(data, connection) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				/**
-				 * @type {Array<any>}
-				 */
 				const facilities = await this.#repository.GetFacilities();
 				const parking_types = await this.#repository.GetParkingTypes();
 				const parking_restrictions =
@@ -198,80 +195,91 @@ module.exports = class CSVService {
 					data.party_id
 				);
 
+				let locationResult;
+
+				// Check if party id exists
 				if (!cpo[0]) throw new HttpBadRequest("PARTY_ID_DOES_NOT_EXISTS", []);
 
-				// Request to Google Geocoding API for the data based on the address provided.
-				const geocodedAddress = await axios.get(
-					`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURI(
-						data.address
-					)}&key=${process.env.GOOGLE_GEO_API_KEY}`
+				// Retrieve data of location by name
+				const isExisting = await this.#repository.SearchLocationByName(
+					data.name
 				);
 
-				/**
-				 * Get the address_components object
-				 *
-				 * This object contains all of the details related to a address such as municipality, region, and postal code.
-				 */
-				const address_components =
-					geocodedAddress.data.results[0]?.address_components;
+				// Check if location name exists. If location exists, skip the insertion part of location.
+				if (!isExisting.length) {
+					// Request to Google Geocoding API for the data based on the address provided.
+					const geocodedAddress = await axios.get(
+						`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURI(
+							data.address
+						)}&key=${process.env.GOOGLE_GEO_API_KEY}`
+					);
 
-				if (!address_components)
-					throw new HttpBadRequest("LOCATION_NOT_FOUND", []);
+					/**
+					 * Get the address_components object
+					 *
+					 * This object contains all of the details related to a address such as municipality, region, and postal code.
+					 */
+					const address_components =
+						geocodedAddress.data.results[0]?.address_components;
 
-				// Get the city name when the type is 'locality'
-				const city = address_components.find((component) =>
-					component.types.includes("locality")
-				)?.long_name;
+					if (!address_components)
+						throw new HttpBadRequest("LOCATION_NOT_FOUND", []);
 
-				/**
-				 * Get the region name when the type is 'administrative_area_level_1'
-				 *
-				 * Get the first three letters of the region, convert it to uppercase, and trim it.
-				 */
-				const region = String(
-					address_components.find((component) =>
-						component.types.includes("administrative_area_level_1")
-					)?.short_name
-				)
-					.slice(0, 3)
-					.toUpperCase()
-					.trim();
+					// Get the city name when the type is 'locality'
+					const city = address_components.find((component) =>
+						component.types.includes("locality")
+					)?.long_name;
 
-				/**
-				 * Get the postal code of the address when the type is 'postal_code'
-				 */
-				const postal_code = address_components.find((component) =>
-					component.types.includes("postal_code")
-				)?.long_name;
+					/**
+					 * Get the region name when the type is 'administrative_area_level_1'
+					 *
+					 * Get the first three letters of the region, convert it to uppercase, and trim it.
+					 */
+					const region = String(
+						address_components.find((component) =>
+							component.types.includes("administrative_area_level_1")
+						)?.short_name
+					)
+						.slice(0, 3)
+						.toUpperCase()
+						.trim();
 
-				// Get the latitude, and longitude of the address
-				const { lat, lng } = geocodedAddress.data.results[0].geometry.location;
+					/**
+					 * Get the postal code of the address when the type is 'postal_code'
+					 */
+					const postal_code = address_components.find((component) =>
+						component.types.includes("postal_code")
+					)?.long_name;
 
-				// Get the formatted address.
-				const formatted_address =
-					geocodedAddress.data.results[0].formatted_address;
+					// Get the latitude, and longitude of the address
+					const { lat, lng } =
+						geocodedAddress.data.results[0].geometry.location;
 
-				// Add a location
-				const locationResult = await this.#repository.RegisterLocation(
-					{
-						cpo_owner_id: cpo[0].id,
-						name: data.name,
-						address: formatted_address,
-						lat,
-						lng,
-						city,
-						region,
-						postal_code,
-						images: JSON.stringify([]),
-					},
-					connection
-				);
+					// Get the formatted address.
+					const formatted_address =
+						geocodedAddress.data.results[0].formatted_address;
 
-				let cpoFacilities;
-				let cpoParkingTypes;
-				let cpoParkingRestrictions;
+					// Add a location
+					locationResult = await this.#repository.RegisterLocation(
+						{
+							cpo_owner_id: cpo[0].id,
+							name: data.name,
+							address: formatted_address,
+							lat,
+							lng,
+							city,
+							region,
+							postal_code,
+							images: JSON.stringify([]),
+						},
+						connection
+					);
 
-				try {
+					let cpoFacilities;
+					let cpoParkingTypes;
+					let cpoParkingRestrictions;
+
+					// Data mapping of Location's facilities
 					cpoFacilities = data.facilities.map((facility) => {
 						const index = facilities.findIndex((f) => f.code === facility);
 
@@ -281,6 +289,7 @@ module.exports = class CSVService {
 						return [facilities[index].id, locationResult.insertId];
 					});
 
+					// Data mapping of Location's parking_types
 					cpoParkingTypes = data.parking_types.map((parkingType) => {
 						const index = parking_types.findIndex(
 							(f) => f.code === parkingType
@@ -296,6 +305,7 @@ module.exports = class CSVService {
 						];
 					});
 
+					// Data mapping of Location's parking_restrictions
 					cpoParkingRestrictions = data.parking_restrictions.map(
 						(parkingRestriction) => {
 							const index = parking_restrictions.findIndex(
@@ -306,22 +316,27 @@ module.exports = class CSVService {
 							return [parking_restrictions[index].id, locationResult.insertId];
 						}
 					);
-				} catch (err) {
-					console.log(err);
-					throw err;
+
+					// Insertion of location's facilities
+					await this.#repository.AddLocationFacilities(
+						cpoFacilities,
+						connection
+					);
+
+					// Insertion of location's parking_types
+					await this.#repository.AddLocationParkingTypes(
+						cpoParkingTypes,
+						connection
+					);
+
+					// Insertion of location's parking_restrictions
+					await this.#repository.AddLocationParkingRestrictions(
+						cpoParkingRestrictions,
+						connection
+					);
+				} else {
+					locationResult = { insertId: isExisting[0].id };
 				}
-
-				await this.#repository.AddLocationFacilities(cpoFacilities, connection);
-
-				await this.#repository.AddLocationParkingTypes(
-					cpoParkingTypes,
-					connection
-				);
-
-				await this.#repository.AddLocationParkingRestrictions(
-					cpoParkingRestrictions,
-					connection
-				);
 
 				// Add EVSEs to the location
 				for (const evse of evses) {
