@@ -279,6 +279,51 @@ module.exports = class CSVRepository {
 		});
 	}
 
+	/**
+	 * Adds payment types to an Electric Vehicle Supply Equipment (EVSE).
+	 *
+	 * @function AddEVSEPaymentTypes
+	 * @param {Array<Array<string>>} paymentTypes - The payment types to add, each represented as an array [evse_uid, payment_type_id].
+	 * @param {Object} connection - The database connection object.
+	 * @returns {Promise<Object>} A promise that resolves to the result of the database insert operation.
+	 */
+	AddEVSEPaymentTypes(paymentTypes, connection) {
+		const QUERY = `INSERT INTO evse_payment_types (evse_uid, payment_type_id)
+		VALUES ?`;
+
+		return new Promise((resolve, reject) => {
+			connection.query(QUERY, [paymentTypes], (err, result) => {
+				if (err) {
+					reject(err);
+				}
+
+				resolve(result);
+			});
+		});
+	}
+
+	/**
+	 * Adds capabilities to an Electric Vehicle Supply Equipment (EVSE).
+	 *
+	 * @function AddEVSECapabilities
+	 * @param {Array<Array<string>>} capabilities - The capabilities to add, each represented as an array [capability_id, evse_uid].
+	 * @param {Object} connection - The database connection object.
+	 * @returns {Promise<Object>} A promise that resolves to the result of the database insert operation.
+	 */
+	AddEVSECapabilities(capabilities, connection) {
+		const QUERY = `INSERT INTO evse_capabilities (capability_id, evse_uid) VALUES ?`;
+
+		return new Promise((resolve, reject) => {
+			connection.query(QUERY, [capabilities], (err, result) => {
+				if (err) {
+					reject(err);
+				}
+
+				resolve(result);
+			});
+		});
+	}
+
 	GetFacilities() {
 		const QUERY = `
 
@@ -291,11 +336,9 @@ module.exports = class CSVRepository {
 
 		return new Promise((resolve, reject) => {
 			mysql.query(QUERY, (err, result) => {
-				if (err) {
-					reject(err);
-				} else {
-					resolve(result);
-				}
+				if (err) reject(err);
+
+				resolve(result);
 			});
 		});
 	}
@@ -311,11 +354,9 @@ module.exports = class CSVRepository {
 
 		return new Promise((resolve, reject) => {
 			mysql.query(QUERY, (err, result) => {
-				if (err) {
-					reject(err);
-				} else {
-					resolve(result);
-				}
+				if (err) reject(err);
+
+				resolve(result);
 			});
 		});
 	}
@@ -331,11 +372,45 @@ module.exports = class CSVRepository {
 
 		return new Promise((resolve, reject) => {
 			mysql.query(QUERY, (err, result) => {
-				if (err) {
-					reject(err);
-				} else {
-					resolve(result);
-				}
+				if (err) reject(err);
+
+				resolve(result);
+			});
+		});
+	}
+
+	GetCapabilities() {
+		const QUERY = `
+			SELECT
+				id,
+				code
+			FROM 	
+				capabilities
+		`;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, (err, result) => {
+				if (err) reject(err);
+
+				resolve(result);
+			});
+		});
+	}
+
+	GetPaymentTypes() {
+		const QUERY = `
+			SELECT
+				id,
+				code
+			FROM
+				payment_types
+		`;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, (err, result) => {
+				if (err) reject(err);
+
+				resolve(result);
 			});
 		});
 	}

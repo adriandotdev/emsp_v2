@@ -33,7 +33,7 @@ module.exports = class CSVService {
 					data.push(row);
 				})
 				.on("end", () => {
-					fs.unlinkSync(filePath);
+					fs.unlinkSync(filePath); // Delete the file after getting the data
 
 					const result = [];
 
@@ -190,8 +190,9 @@ module.exports = class CSVService {
 				const parking_types = await this.#repository.GetParkingTypes();
 				const parking_restrictions =
 					await this.#repository.GetParkingRestrictions();
+				const capabilities = await this.#repository.GetCapabilities();
+				const payment_types = await this.#repository.GetPaymentTypes();
 
-				console.log(facilities, parking_types, parking_restrictions);
 				const evses = data.evses;
 				const cpo = await this.#repository.GetCPOOwnerIDByPartyID(
 					data.party_id
@@ -346,17 +347,43 @@ module.exports = class CSVService {
 						rate_setting: evse.kwh,
 					}));
 
-					const connectorResult = await this.#repository.AddConnector(
+					const evseCapabilities = evse.capabilities.map((capability) => {
+						const index = capabilities.findIndex((f) => f.code === capability);
+						if (index === -1)
+							throw new HttpBadRequest("INVALID_CAPABILITIES", []);
+						return [capabilities[index].id, evse.uid];
+					});
+
+					const evsePaymentTypes = evse.payment_types.map((paymentType) => {
+						const index = payment_types.findIndex(
+							(f) => f.code === paymentType
+						);
+						if (index === -1)
+							throw new HttpBadRequest("INVALID_PAYMENT_TYPES", []);
+						return [evse.uid, payment_types[index].id];
+					});
+
+					await this.#repository.AddConnector(
 						evse.uid,
 						transformedConnectors,
 						connection
 					);
+
+					await this.#repository.AddEVSECapabilities(
+						evseCapabilities,
+						connection
+					);
+
+					await this.#repository.AddEVSEPaymentTypes(
+						evsePaymentTypes,
+						connection
+					);
 				}
 
-				console.log("RESOLVED");
+				logger.info({ message: "RESOLVED" });
 				resolve({ location_id: locationResult.insertId });
 			} catch (err) {
-				console.log("REJECTED");
+				logger.info({ message: "REJECTED" });
 				reject(err);
 			}
 		});
