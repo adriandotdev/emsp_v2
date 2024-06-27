@@ -15,7 +15,7 @@ module.exports = (app, csvUpload) => {
 
 	app.post(
 		"/ocpi/cpo/api/v1/locations/uploads/csv/:party_id",
-		[tokenMiddleware.VerifyCPOToken(), csvUpload.single("file")],
+		[tokenMiddleware.AccessTokenVerifier(), csvUpload.single("file")],
 
 		/**
 		 * @param {import('express').Request} req

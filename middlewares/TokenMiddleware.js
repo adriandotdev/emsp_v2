@@ -75,6 +75,7 @@ module.exports = class TokenMiddleware {
 						req.role_id = decode.data.role_id;
 						req.role = decode.data.role;
 						req.access_token = decryptedAccessToken;
+						req.party_id = decode.data.party_id;
 					}
 				);
 
@@ -181,6 +182,7 @@ module.exports = class TokenMiddleware {
 						req.role_id = decode.data.role_id;
 						req.role = decode.data.role;
 						req.refresh_token = decryptedRefreshToken;
+						req.party_id = decode.data.party_id;
 					}
 				);
 

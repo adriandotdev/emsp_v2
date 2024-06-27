@@ -64,6 +64,8 @@ module.exports = class AccountService {
 				connection
 			);
 
+			console.log(result);
+
 			/** If user is not found */
 			if (result.length < 1) {
 				winston.error({
@@ -92,6 +94,7 @@ module.exports = class AccountService {
 				role: result[0].role,
 				role_id: result[0].id,
 				rfid_card_tag: result[0].rfid_card_tag,
+				party_id: result[0].party_id,
 			};
 
 			const privileges = await this.#repository.GetUserPrivileges(
@@ -246,6 +249,7 @@ module.exports = class AccountService {
 				role: decode.data.role,
 				role_id: decode.data.role_id,
 				rfid_card_tag: decode.data.rfid_card_tag,
+				party_id: decode.data.party_id,
 			};
 
 			const access_token = JWT.Sign(

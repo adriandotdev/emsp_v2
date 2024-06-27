@@ -83,11 +83,13 @@ module.exports = class AccountRepository {
 				users.password, 
 				users.role,
 				users.user_status,
-				rfid_cards.rfid_card_tag 
+				rfid_cards.rfid_card_tag ,
+				cpo_owners.party_id
 			FROM 
 				users 
 			LEFT JOIN user_drivers ON users.id = user_drivers.user_id
 			LEFT JOIN rfid_cards ON rfid_cards.user_driver_id = user_drivers.id
+			LEFT JOIN cpo_owners ON cpo_owners.user_id = users.id
 			WHERE username = ? AND password = MD5(?)
 		`;
 		return new Promise((resolve, reject) => {
