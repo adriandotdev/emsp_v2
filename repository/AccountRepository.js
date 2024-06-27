@@ -84,7 +84,8 @@ module.exports = class AccountRepository {
 				users.role,
 				users.user_status,
 				rfid_cards.rfid_card_tag ,
-				cpo_owners.party_id
+				cpo_owners.party_id,
+				cpo_owners.id AS cpo_owner_id
 			FROM 
 				users 
 			LEFT JOIN user_drivers ON users.id = user_drivers.user_id

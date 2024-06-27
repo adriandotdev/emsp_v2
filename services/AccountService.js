@@ -95,6 +95,7 @@ module.exports = class AccountService {
 				role_id: result[0].id,
 				rfid_card_tag: result[0].rfid_card_tag,
 				party_id: result[0].party_id,
+				cpo_owner_id: result[0].cpo_owner_id,
 			};
 
 			const privileges = await this.#repository.GetUserPrivileges(
@@ -250,6 +251,7 @@ module.exports = class AccountService {
 				role_id: decode.data.role_id,
 				rfid_card_tag: decode.data.rfid_card_tag,
 				party_id: decode.data.party_id,
+				cpo_owner_id: decode.data.cpo_owner_id,
 			};
 
 			const access_token = JWT.Sign(
