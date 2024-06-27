@@ -157,6 +157,7 @@ module.exports = class CSVService {
 				});
 				connection.rollback();
 				throw new HttpInternalServerError(
+					"CSV_CANNOT_BE_PROCESSED",
 					errors.map((err) => err.message).join(", ")
 				);
 			} else {
