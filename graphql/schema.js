@@ -204,6 +204,27 @@ const RootQuery = new GraphQLObjectType({
 				}
 			},
 		},
+		evse: {
+			/**
+			 * Return only the EVSE under of the logged in CPO
+			 */
+			type: new GraphQLList(EVSE),
+			async resolve(parent, args, context) {
+				try {
+					const tokenData = await tokenMiddleware.AccessTokenVerifier(
+						context.auth
+					);
+
+					const result = await locationRepository.GetEVSEsByCPOOwnerID(
+						tokenData.cpo_owner_id
+					);
+
+					return result;
+				} catch (err) {
+					throw err;
+				}
+			},
+		},
 	},
 });
 

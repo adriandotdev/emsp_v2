@@ -40,6 +40,26 @@ module.exports = class LocationRepository {
 		});
 	}
 
+	GetEVSEsByCPOOwnerID(cpoOwnerID) {
+		const QUERY = `
+            SELECT
+                *
+            FROM 
+                evse
+            INNER JOIN cpo_locations ON evse.cpo_location_id = cpo_locations.id
+			INNER JOIN cpo_owners ON cpo_locations.cpo_owner_id = cpo_owners.id
+			WHERE cpo_owners.id = ?
+        `;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, [cpoOwnerID], (err, result) => {
+				if (err) reject(err);
+
+				resolve(result);
+			});
+		});
+	}
+
 	GetConnectors(evseUID) {
 		const QUERY = `
         
