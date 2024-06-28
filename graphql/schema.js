@@ -16,6 +16,8 @@ const logger = require("../config/winston");
 
 const locationRepository = new LocationRepository();
 
+const GraphQLTokenMiddleware = require("../middlewares/GraphQLTokenMiddleware");
+
 const LOCATIONS = new GraphQLObjectType({
 	name: "LOCATIONS",
 	fields: () => ({
@@ -39,6 +41,26 @@ const LOCATIONS = new GraphQLObjectType({
 				return await locationRepository.GetEVSEs(parent.id);
 			},
 		},
+		facilities: {
+			type: new GraphQLList(FACILITY),
+			async resolve(parent, args) {
+				return await locationRepository.GetLocationFacilities(parent.id);
+			},
+		},
+		parking_restrictions: {
+			type: new GraphQLList(PARKING_RESTRICTION),
+			async resolve(parent, args) {
+				return await locationRepository.GetLocationParkingRestrictions(
+					parent.id
+				);
+			},
+		},
+		parking_types: {
+			type: new GraphQLList(PARKING_TYPE),
+			resolve: async function (parent) {
+				return await locationRepository.GetLocationParkingTypes(parent.id);
+			},
+		},
 	}),
 });
 
@@ -58,6 +80,18 @@ const EVSE = new GraphQLObjectType({
 			type: new GraphQLList(CONNECTOR),
 			async resolve(parent, args) {
 				return await locationRepository.GetConnectors(parent.uid);
+			},
+		},
+		capabilities: {
+			type: new GraphQLList(EVSE_CAPABILITY),
+			resolve: async function (parent) {
+				return await locationRepository.GetEVSECapabilities(parent.uid);
+			},
+		},
+		payment_types: {
+			type: new GraphQLList(PAYMENT_TYPE),
+			resolve: async function (parent) {
+				return await locationRepository.GetEVSEPaymentTypes(parent.uid);
 			},
 		},
 	}),
@@ -83,37 +117,91 @@ const CONNECTOR = new GraphQLObjectType({
 	}),
 });
 
+const FACILITY = new GraphQLObjectType({
+	name: "FACILITY",
+	fields: () => ({
+		id: { type: GraphQLInt },
+		code: { type: GraphQLString },
+		description: { type: GraphQLString },
+	}),
+});
+
+const PARKING_RESTRICTION = new GraphQLObjectType({
+	name: "PARKING_RESTRICTION",
+	fields: () => ({
+		id: { type: GraphQLInt },
+		code: { type: GraphQLString },
+		description: { type: GraphQLString },
+	}),
+});
+
+const PARKING_TYPE = new GraphQLObjectType({
+	name: "PARKING_TYPE",
+	fields: () => ({
+		id: { type: GraphQLInt },
+		code: { type: GraphQLString },
+		description: { type: GraphQLString },
+	}),
+});
+
+const EVSE_CAPABILITY = new GraphQLObjectType({
+	name: "EVSE_CAPABILITY",
+	fields: () => ({
+		id: { type: GraphQLInt },
+		code: { type: GraphQLString },
+		description: { type: GraphQLString },
+	}),
+});
+
+const PAYMENT_TYPE = new GraphQLObjectType({
+	name: "PAYMENT_TYPES",
+	fields: () => ({
+		id: { type: GraphQLInt },
+		code: { type: GraphQLString },
+		description: { type: GraphQLString },
+	}),
+});
+
+const tokenMiddleware = new GraphQLTokenMiddleware();
+
 const RootQuery = new GraphQLObjectType({
 	name: "Query",
 	fields: {
 		locations: {
 			type: new GraphQLList(LOCATIONS),
 			args: {
-				cpo_owner_id: { type: GraphQLInt },
 				limit: { type: GraphQLInt },
 				offset: { type: GraphQLInt },
 			},
-			async resolve(parent, args) {
+			async resolve(parent, args, context) {
 				logger.info({
 					GET_LOCATIONS_REQUEST: {
 						data: {
-							cpo_owner_id: args.cpo_owner_id,
 							limit: args.limit,
 							offset: args.offset,
+							context,
 						},
 						message: "SUCCESS",
 					},
 				});
 
-				const result = await locationRepository.GetLocations(
-					args.cpo_owner_id,
-					args.limit,
-					args.offset
-				);
+				try {
+					const tokenData = await tokenMiddleware.AccessTokenVerifier(
+						context.auth
+					);
 
-				logger.info({ GET_LOCATIONS_RESPONSE: { message: "SUCCESS" } });
+					const result = await locationRepository.GetLocations(
+						tokenData.cpo_owner_id,
+						args.limit,
+						args.offset
+					);
 
-				return result;
+					logger.info({ GET_LOCATIONS_RESPONSE: { message: "SUCCESS" } });
+
+					return result;
+				} catch (err) {
+					throw err;
+				}
 			},
 		},
 	},

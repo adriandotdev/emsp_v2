@@ -13,6 +13,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const helmet = require("helmet");
+const compression = require("compression");
 const swaggerUI = require("swagger-ui-express");
 const swaggerSpec = require("./swagger");
 const app = express();
@@ -55,6 +56,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("combined", { stream: logger.stream }));
 app.use(cookieParser());
 app.use("/images", express.static(path.join(__dirname, "public/images")));
+app.use(compression());
 
 const storage = multer.diskStorage({
 	destination: function (req, file, cb) {
@@ -135,7 +137,23 @@ require("./api/cpo.api")(app, upload);
 require("./api/filters.api")(app);
 require("./api/csv.api")(app, csvUpload);
 
-app.use("/ocpi/cpo/graphql", createHandler({ schema }));
+app.use(
+	"/ocpi/cpo/graphql",
+	createHandler({
+		schema,
+		context: (req) => ({
+			auth: req.headers.authorization,
+		}),
+		formatError: (error) => {
+			return {
+				message: error.originalError.message
+					? error.originalError.message
+					: "Internal Server Error",
+				status: error.originalError.status ? error.originalError.status : 500,
+			};
+		},
+	})
+);
 
 app.use("*", (req, res, next) => {
 	logger.error({

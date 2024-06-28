@@ -15,6 +15,7 @@
 		"@types/jest": "^29.5.12",
 		"axios": "^1.7.2",
 		"body-parser": "^1.20.2",
+		"compression": "^1.7.4",
 		"cookie-parser": "^1.4.6",
 		"cors": "^2.8.5",
 		"csv": "^6.3.9",
