@@ -64,6 +64,26 @@ const LOCATIONS = new GraphQLObjectType({
 	}),
 });
 
+const LOCATION_IN_EVSE = new GraphQLObjectType({
+	name: "LOCATION_IN_EVSE",
+	fields: () => ({
+		id: { type: GraphQLInt },
+		cpo_owner_id: { type: GraphQLInt },
+		name: { type: GraphQLString },
+		address: { type: GraphQLString },
+		address_lat: { type: GraphQLFloat },
+		address_lng: { type: GraphQLFloat },
+		city: { type: GraphQLString },
+		region: { type: GraphQLString },
+		postal_code: { type: GraphQLString },
+		country_code: { type: GraphQLString },
+		images: { type: new GraphQLList(GraphQLString) },
+		publish: { type: GraphQLBoolean },
+		date_created: { type: GraphQLString },
+		date_modified: { type: GraphQLString },
+	}),
+});
+
 const EVSE = new GraphQLObjectType({
 	name: "EVSE",
 	fields: () => ({
@@ -76,6 +96,16 @@ const EVSE = new GraphQLObjectType({
 		current_ws_connection_id: { type: GraphQLString },
 		server_id: { type: GraphQLString },
 		date_created: { type: GraphQLString },
+		locations: {
+			type: LOCATION_IN_EVSE,
+			async resolve(parent, args) {
+				const location = await locationRepository.GetLocationsById(
+					parent.cpo_location_id
+				);
+
+				return location[0];
+			},
+		},
 		connectors: {
 			type: new GraphQLList(CONNECTOR),
 			async resolve(parent, args) {

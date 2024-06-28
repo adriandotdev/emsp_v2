@@ -21,6 +21,25 @@ module.exports = class LocationRepository {
 		});
 	}
 
+	GetLocationsById(locationID) {
+		const QUERY = `
+			SELECT
+				*
+			FROM
+				cpo_locations
+			WHERE 
+				id = ?
+		`;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, [locationID], (err, result) => {
+				if (err) reject(err);
+
+				resolve(result);
+			});
+		});
+	}
+
 	GetEVSEs(cpoLocationID) {
 		const QUERY = `
             SELECT
