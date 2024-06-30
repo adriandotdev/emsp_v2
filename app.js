@@ -136,7 +136,7 @@ require("./api/accounts.api")(app);
 require("./api/cpo.api")(app, upload);
 require("./api/filters.api")(app);
 require("./api/csv.api")(app, csvUpload);
-
+require("./api/locations.api")(app);
 app.use(
 	"/ocpi/cpo/graphql",
 	createHandler({
