@@ -17,6 +17,7 @@ const logger = require("../config/winston");
 const locationRepository = new LocationRepository();
 
 const GraphQLTokenMiddleware = require("../middlewares/GraphQLTokenMiddleware");
+const { HttpBadRequest } = require("../utils/HttpError");
 
 const LOCATIONS = new GraphQLObjectType({
 	name: "LOCATIONS",
@@ -81,6 +82,26 @@ const LOCATION_IN_EVSE = new GraphQLObjectType({
 		publish: { type: GraphQLBoolean },
 		date_created: { type: GraphQLString },
 		date_modified: { type: GraphQLString },
+		facilities: {
+			type: new GraphQLList(FACILITY),
+			async resolve(parent, args) {
+				return await locationRepository.GetLocationFacilities(parent.id);
+			},
+		},
+		parking_restrictions: {
+			type: new GraphQLList(PARKING_RESTRICTION),
+			async resolve(parent, args) {
+				return await locationRepository.GetLocationParkingRestrictions(
+					parent.id
+				);
+			},
+		},
+		parking_types: {
+			type: new GraphQLList(PARKING_TYPE),
+			resolve: async function (parent) {
+				return await locationRepository.GetLocationParkingTypes(parent.id);
+			},
+		},
 	}),
 });
 
@@ -239,14 +260,35 @@ const RootQuery = new GraphQLObjectType({
 			 * Return only the EVSE under of the logged in CPO
 			 */
 			type: new GraphQLList(EVSE),
+			args: {
+				location_name: { type: GraphQLString },
+				order_by: { type: GraphQLString },
+				order: { type: GraphQLString, defaultValue: "ASC" },
+			},
 			async resolve(parent, args, context) {
 				try {
+					const { location_name, order_by, order } = args;
+
+					if (!location_name)
+						throw new HttpBadRequest("LOCATION_NAME_CANNOT_BE_EMPTY", []);
+
+					if (!["ASC", "DESC"].includes(order))
+						throw new HttpBadRequest(
+							"INVALID_ORDER_VALUE: Valid values are: ASC | DESC"
+						);
+
+					if (!["location", "date_created"].includes(order_by))
+						throw new HttpBadRequest("INVALID_ORDER_BY_VALUE", []);
+
 					const tokenData = await tokenMiddleware.AccessTokenVerifier(
 						context.auth
 					);
 
 					const result = await locationRepository.GetEVSEsByCPOOwnerID(
-						tokenData.cpo_owner_id
+						tokenData.cpo_owner_id,
+						location_name,
+						order_by,
+						order
 					);
 
 					return result;

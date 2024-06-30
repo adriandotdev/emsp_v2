@@ -59,19 +59,57 @@ module.exports = class LocationRepository {
 		});
 	}
 
-	GetEVSEsByCPOOwnerID(cpoOwnerID) {
+	GetEVSEsByCPOOwnerID(cpoOwnerID, locationName, orderBy, order) {
+		// const QUERY = `
+		//     SELECT
+		//         *
+		//     FROM
+		//         evse
+		//     INNER JOIN cpo_locations ON evse.cpo_location_id = cpo_locations.id
+		// 	INNER JOIN cpo_owners ON cpo_locations.cpo_owner_id = cpo_owners.id
+		// 	WHERE cpo_owners.id = ?
+		// 	ORDER BY evse.date_created
+		// `;
 		const QUERY = `
-            SELECT
+			 SELECT
                 *
             FROM 
                 evse
             INNER JOIN cpo_locations ON evse.cpo_location_id = cpo_locations.id
 			INNER JOIN cpo_owners ON cpo_locations.cpo_owner_id = cpo_owners.id
-			WHERE cpo_owners.id = ?
-        `;
+			WHERE cpo_owners.id = ? ${
+				locationName ? `AND cpo_locations.name LIKE "${locationName}%"` : ""
+			}
+			ORDER BY ${
+				orderBy === "location" ? "cpo_locations.name" : "evse.date_created"
+			} ${order}
+		`;
 
 		return new Promise((resolve, reject) => {
 			mysql.query(QUERY, [cpoOwnerID], (err, result) => {
+				if (err) reject(err);
+
+				resolve(result);
+			});
+		});
+	}
+
+	GetEVSEsOfLocationByName(cpoOwnerID, locationName, orderBy) {
+		const QUERY = `
+			 SELECT
+                *
+            FROM 
+                evse
+            INNER JOIN cpo_locations ON evse.cpo_location_id = cpo_locations.id
+			INNER JOIN cpo_owners ON cpo_locations.cpo_owner_id = cpo_owners.id
+			WHERE cpo_owners.id = ? ${locationName && "AND cpo_locations.name = ?"}
+			ORDER BY ${
+				orderBy === "date_created" ? "evse.date_created" : "cpo_locations.name"
+			}
+		`;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, [cpoOwnerID, locationName], (err, result) => {
 				if (err) reject(err);
 
 				resolve(result);
