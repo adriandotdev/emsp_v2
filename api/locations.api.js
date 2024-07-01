@@ -1,5 +1,6 @@
-const CSVService = require("../services/CSVService");
+const LocationService = require("../services/LocationService");
 const CSVRepository = require("../repository/CSVRepository");
+const LocationRepository = require("../repository/LocationRepository");
 
 const TokenMiddleware = require("../middlewares/TokenMiddleware");
 
@@ -9,7 +10,10 @@ const logger = require("../config/winston");
  * @param {import('express').Express} app
  */
 module.exports = (app) => {
-	const service = new CSVService(new CSVRepository());
+	const service = new LocationService(
+		new CSVRepository(),
+		new LocationRepository()
+	);
 	const tokenMiddleware = new TokenMiddleware();
 
 	app.post(
