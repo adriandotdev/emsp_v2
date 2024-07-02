@@ -17,8 +17,8 @@ module.exports = (app) => {
 	const tokenMiddleware = new TokenMiddleware();
 
 	app.post(
-		"/ocpi/cpo/webhook/locations",
-		[tokenMiddleware.AccessTokenVerifier()],
+		"/ocpi/cpo/api/v1/webhook/locations/:country_code/:party_id",
+		[tokenMiddleware.VerifyCPOToken()],
 
 		/**
 		 * @param {import('express').Request} req
@@ -55,6 +55,8 @@ module.exports = (app) => {
 			}
 		}
 	);
+
+	app.post("/ocpi/cpo/api/v1/webhook/evse", [], async (req, res) => {});
 
 	app.use((err, req, res, next) => {
 		logger.error({

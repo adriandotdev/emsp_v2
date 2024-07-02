@@ -508,6 +508,24 @@ module.exports = class AccountRepository {
 		});
 	}
 
+	GetCPOOwnerIDByPartyID(partyID) {
+		const QUERY = `
+			SELECT 
+				id
+			FROM
+				cpo_owners
+			WHERE
+				party_id = ?
+		`;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, [partyID], (err, result) => {
+				if (err) reject(err);
+
+				resolve(result);
+			});
+		});
+	}
 	/**
 	 * Records an audit trail of administrative actions.
 	 *

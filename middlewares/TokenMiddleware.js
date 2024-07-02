@@ -4,6 +4,7 @@ const {
 	HttpUnauthorized,
 	HttpInternalServerError,
 	HttpForbidden,
+	HttpBadRequest,
 } = require("../utils/HttpError");
 const logger = require("../config/winston");
 const Crypto = require("../utils/Crypto");
@@ -295,6 +296,7 @@ module.exports = class TokenMiddleware {
 				if (securityType !== "Bearer")
 					throw new HttpUnauthorized("Unauthorized", []);
 
+				const country_code = req.params.country_code;
 				const party_id = req.params.party_id;
 
 				const decodedToken = JSON.parse(Crypto.Decrypt(token));
@@ -302,7 +304,15 @@ module.exports = class TokenMiddleware {
 				if (decodedToken.party_id !== party_id)
 					throw new HttpForbidden("Forbidden", []);
 
+				if (country_code !== "PH")
+					throw new HttpBadRequest("INVALID_COUNTRY_CODE", []);
+
+				const cpo_owner_id = await this.#repository.GetCPOOwnerIDByPartyID(
+					party_id
+				);
+
 				req.party_id = party_id;
+				req.cpo_owner_id = cpo_owner_id;
 
 				next();
 			} catch (err) {
