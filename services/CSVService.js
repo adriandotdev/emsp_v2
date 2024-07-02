@@ -3,6 +3,7 @@ const fs = require("fs");
 const { parse } = require("csv");
 
 const CSVRepository = require("../repository/CSVRepository");
+const LocationRepository = require("../repository/LocationRepository");
 
 const {
 	HttpBadRequest,
@@ -16,10 +17,16 @@ module.exports = class CSVService {
 	/**
 	 * @type {CSVRepository}
 	 */
-	#repository;
+	#csvRepository;
 
-	constructor(repository) {
-		this.#repository = repository;
+	/**
+	 * @type {LocationRepository}
+	 */
+	#locationRepository;
+
+	constructor(csvRepository, locationRepository) {
+		this.#csvRepository = csvRepository;
+		this.#locationRepository = locationRepository;
 	}
 
 	ReadCSVFile(filename) {
@@ -132,7 +139,7 @@ module.exports = class CSVService {
 		let connection = null;
 
 		try {
-			connection = await this.#repository.GetConnection();
+			connection = await this.#csvRepository.GetConnection();
 			connection.beginTransaction();
 
 			const promises = locations.map(async (location) => {
@@ -184,15 +191,15 @@ module.exports = class CSVService {
 	RegisterLocationAndEVSEs(data, connection) {
 		return new Promise(async (resolve, reject) => {
 			try {
-				const facilities = await this.#repository.GetFacilities();
-				const parking_types = await this.#repository.GetParkingTypes();
+				const facilities = await this.#locationRepository.GetFacilities();
+				const parking_types = await this.#locationRepository.GetParkingTypes();
 				const parking_restrictions =
-					await this.#repository.GetParkingRestrictions();
-				const capabilities = await this.#repository.GetCapabilities();
-				const payment_types = await this.#repository.GetPaymentTypes();
+					await this.#locationRepository.GetParkingRestrictions();
+				const capabilities = await this.#locationRepository.GetCapabilities();
+				const payment_types = await this.#locationRepository.GetPaymentTypes();
 
 				const evses = data.evses;
-				const cpo = await this.#repository.GetCPOOwnerIDByPartyID(
+				const cpo = await this.#csvRepository.GetCPOOwnerIDByPartyID(
 					data.party_id
 				);
 
@@ -202,7 +209,7 @@ module.exports = class CSVService {
 				if (!cpo[0]) throw new HttpBadRequest("PARTY_ID_DOES_NOT_EXISTS", []);
 
 				// Retrieve data of location by name
-				const isExisting = await this.#repository.SearchLocationByName(
+				const isExisting = await this.#csvRepository.SearchLocationByName(
 					data.name
 				);
 
@@ -261,7 +268,7 @@ module.exports = class CSVService {
 						geocodedAddress.data.results[0].formatted_address;
 
 					// Add a location
-					locationResult = await this.#repository.RegisterLocation(
+					locationResult = await this.#locationRepository.RegisterLocation(
 						{
 							cpo_owner_id: cpo[0].id,
 							name: data.name,
@@ -319,19 +326,19 @@ module.exports = class CSVService {
 					);
 
 					// Insertion of location's facilities
-					await this.#repository.AddLocationFacilities(
+					await this.#locationRepository.AddLocationFacilities(
 						cpoFacilities,
 						connection
 					);
 
 					// Insertion of location's parking_types
-					await this.#repository.AddLocationParkingTypes(
+					await this.#locationRepository.AddLocationParkingTypes(
 						cpoParkingTypes,
 						connection
 					);
 
 					// Insertion of location's parking_restrictions
-					await this.#repository.AddLocationParkingRestrictions(
+					await this.#locationRepository.AddLocationParkingRestrictions(
 						cpoParkingRestrictions,
 						connection
 					);
@@ -341,7 +348,7 @@ module.exports = class CSVService {
 
 				// Add EVSEs to the location
 				for (const evse of evses) {
-					const evseResult = await this.#repository.RegisterEVSE(
+					const evseResult = await this.#locationRepository.RegisterEVSE(
 						{
 							uid: evse.uid,
 							serial_number: evse.uid,
@@ -379,18 +386,18 @@ module.exports = class CSVService {
 						return [evse.uid, payment_types[index].id];
 					});
 
-					await this.#repository.AddConnector(
+					await this.#locationRepository.AddConnector(
 						evse.uid,
 						transformedConnectors,
 						connection
 					);
 
-					await this.#repository.AddEVSECapabilities(
+					await this.#locationRepository.AddEVSECapabilities(
 						evseCapabilities,
 						connection
 					);
 
-					await this.#repository.AddEVSEPaymentTypes(
+					await this.#locationRepository.AddEVSEPaymentTypes(
 						evsePaymentTypes,
 						connection
 					);

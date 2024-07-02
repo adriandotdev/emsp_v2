@@ -2,6 +2,7 @@ const logger = require("../config/winston");
 
 const CSVService = require("../services/CSVService");
 const CSVRepository = require("../repository/CSVRepository");
+const LocationRepository = require("../repository/LocationRepository");
 
 const TokenMiddleware = require("../middlewares/TokenMiddleware");
 
@@ -10,7 +11,10 @@ const TokenMiddleware = require("../middlewares/TokenMiddleware");
  * @param {import('multer').Multer} csvUpload
  */
 module.exports = (app, csvUpload) => {
-	const service = new CSVService(new CSVRepository());
+	const csvService = new CSVService(
+		new CSVRepository(),
+		new LocationRepository()
+	);
 	const tokenMiddleware = new TokenMiddleware();
 
 	app.post(
@@ -24,15 +28,15 @@ module.exports = (app, csvUpload) => {
 		async (req, res, next) => {
 			try {
 				// Read CSV, and transform into JSON
-				const locations = await service.ReadCSVFile(req.file.filename);
-				const result = await service.RegisterAllLocationsAndEVSEs(
+				const locations = await csvService.ReadCSVFile(req.file.filename);
+				const result = await csvService.RegisterAllLocationsAndEVSEs(
 					req.party_id,
 					locations
 				);
 
 				return res
 					.status(200)
-					.json({ status: 200, data: locations, message: "Success" });
+					.json({ status: 200, data: result, message: "Success" });
 			} catch (err) {
 				req.error_name = "CSV_UPLOAD_ERROR";
 				next(err);
