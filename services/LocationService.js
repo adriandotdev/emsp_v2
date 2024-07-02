@@ -158,7 +158,7 @@ module.exports = class LocationService {
 						geocodedAddress.data.results[0].formatted_address;
 
 					// Add a location
-					locationResult = await this.#csvRepository.RegisterLocation(
+					locationResult = await this.#locationRepository.RegisterLocation(
 						{
 							cpo_owner_id: cpo[0].id,
 							name: data.name,
