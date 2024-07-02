@@ -301,4 +301,73 @@ module.exports = class LocationService {
 			}
 		});
 	}
+
+	async RegisterEVSE(evse) {
+		/**
+		 * @type {import("mysql2").PoolConnection}
+		 */
+		let connection;
+
+		try {
+			const capabilities = await this.#locationRepository.GetCapabilities();
+			const payment_types = await this.#locationRepository.GetPaymentTypes();
+
+			connection = await this.#locationRepository.GetConnection();
+			connection.beginTransaction();
+
+			const evseResult = await this.#locationRepository.RegisterEVSE(
+				{
+					uid: evse.uid,
+					serial_number: evse.uid,
+					meter_type: evse.meter_type,
+					location_id: evse.location_id,
+				},
+				connection
+			);
+
+			if (evseResult[0][0].status_type === "bad_request") {
+				throw new HttpBadRequest(evseResult[0][0].STATUS + ":" + evse.uid, []);
+			}
+
+			const transformedConnectors = evse.connectors.map((connector) => ({
+				...connector,
+				rate_setting: evse.kwh,
+			}));
+
+			const evseCapabilities = evse.capabilities.map((capability) => {
+				const index = capabilities.findIndex((f) => f.code === capability);
+				if (index === -1) throw new HttpBadRequest("INVALID_CAPABILITIES", []);
+				return [capabilities[index].id, evse.uid];
+			});
+
+			const evsePaymentTypes = evse.payment_types.map((paymentType) => {
+				const index = payment_types.findIndex((f) => f.code === paymentType);
+				if (index === -1) throw new HttpBadRequest("INVALID_PAYMENT_TYPES", []);
+				return [evse.uid, payment_types[index].id];
+			});
+
+			await this.#locationRepository.AddConnector(
+				evse.uid,
+				transformedConnectors,
+				connection
+			);
+
+			await this.#locationRepository.AddEVSECapabilities(
+				evseCapabilities,
+				connection
+			);
+
+			await this.#locationRepository.AddEVSEPaymentTypes(
+				evsePaymentTypes,
+				connection
+			);
+
+			connection.commit();
+		} catch (err) {
+			if (connection) connection.rollback();
+			throw err;
+		} finally {
+			if (connection) connection.release();
+		}
+	}
 };

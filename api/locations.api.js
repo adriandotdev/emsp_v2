@@ -5,7 +5,9 @@ const LocationRepository = require("../repository/LocationRepository");
 const TokenMiddleware = require("../middlewares/TokenMiddleware");
 
 const logger = require("../config/winston");
+const { body, validationResult } = require("express-validator");
 
+const { HttpUnprocessableEntity } = require("../utils/HttpError");
 /**
  * @param {import('express').Express} app
  */
@@ -15,6 +17,23 @@ module.exports = (app) => {
 		new LocationRepository()
 	);
 	const tokenMiddleware = new TokenMiddleware();
+
+	/**
+	 * This function will be used by the express-validator for input validation,
+	 * and to be attached to APIs middleware.
+	 * @param {*} req
+	 * @param {*} res
+	 */
+	function validate(req, res) {
+		const ERRORS = validationResult(req);
+
+		if (!ERRORS.isEmpty()) {
+			throw new HttpUnprocessableEntity(
+				"Unprocessable Entity",
+				ERRORS.mapped()
+			);
+		}
+	}
 
 	app.post(
 		"/ocpi/cpo/api/v1/webhook/locations/:country_code/:party_id",
@@ -50,13 +69,96 @@ module.exports = (app) => {
 					.status(200)
 					.json({ status: 200, data: result, message: "Success" });
 			} catch (err) {
-				err.error_name = "WEBHOOK_ADD_LOCATIONS";
+				err.error_name = "WEBHOOK_ADD_LOCATIONS_ERROR";
 				next(err);
 			}
 		}
 	);
 
-	app.post("/ocpi/cpo/api/v1/webhook/evse", [], async (req, res) => {});
+	app.post(
+		"/ocpi/cpo/api/v1/webhook/evse/:country_code/:party_id",
+		[
+			tokenMiddleware.VerifyCPOToken(),
+			body("location_id")
+				.notEmpty()
+				.withMessage("Missing required property: location_id"),
+			body("uid").notEmpty().withMessage("Missing required property: uid"),
+			body("meter_type")
+				.notEmpty()
+				.withMessage("Missing required property: meter_type")
+				.custom((value) => ["AC", "DC"].includes(value))
+				.withMessage("INVALID_METER_TYPE: VALID VALUES ARE [AC, DC]"),
+			body("kwh").notEmpty().withMessage("Missing required property: kwh"),
+			body("connectors")
+				.notEmpty()
+				.withMessage("Missing required property: connectors")
+				.isArray()
+				.withMessage("Property: connectors must be an array"),
+			body("connectors.*.standard")
+				.notEmpty()
+				.withMessage("Missing required connector property: standard"),
+			body("connectors.*.format")
+				.notEmpty()
+				.withMessage("Missing required connector property: format"),
+			body("connectors.*.power_type")
+				.notEmpty()
+				.withMessage("Missing required connector property: power_type")
+				.custom((value) => ["AC", "DC"].includes(value))
+				.withMessage("INVALID_POWER_TYPE: VALID VALUES ARE [AC, DC]"),
+			body("connectors.*.max_voltage")
+				.notEmpty()
+				.withMessage("Missing required connector property: max_voltage")
+				.isInt()
+				.withMessage("Property: connector max_voltage must be an integer"),
+			body("connectors.*.max_amperage")
+				.notEmpty()
+				.withMessage("Missing required connector property: max_amperage")
+				.isInt()
+				.withMessage("Property: connector max_amperage must be an integer"),
+			body("connectors.*.max_electric_power")
+				.notEmpty()
+				.withMessage("Missing required connector property: max_electric_power")
+				.isInt()
+				.withMessage(
+					"Property: connector max_electric_power must be an integer"
+				),
+			body("capabilities")
+				.notEmpty()
+				.withMessage("Missing required connector property: capabilities")
+				.isArray()
+				.withMessage("Property: capabilities must be an array"),
+			body("payment_types")
+				.notEmpty()
+				.withMessage("Missing required connector property: payment_types")
+				.isArray()
+				.withMessage("Property: payment_types must be an array"),
+		],
+		async (req, res, next) => {
+			try {
+				logger.info({
+					WEBHOOK_ADD_EVSE_REQUEST: {
+						data: {
+							...req.body,
+						},
+						message: "SUCCESS",
+					},
+				});
+
+				const result = await service.RegisterEVSE(req.body);
+				logger.info({
+					WEBHOOK_ADD_EVSE_RESPONSE: {
+						message: "SUCCESS",
+					},
+				});
+				return res
+					.status(200)
+					.json({ status: 200, data: result, message: "Success" });
+			} catch (err) {
+				err.error_name = "WEBHOOK_ADD_EVSE_ERROR";
+				next(err);
+			}
+		}
+	);
 
 	app.use((err, req, res, next) => {
 		logger.error({
