@@ -269,9 +269,6 @@ const RootQuery = new GraphQLObjectType({
 				try {
 					const { location_name, order_by, order } = args;
 
-					if (!location_name)
-						throw new HttpBadRequest("LOCATION_NAME_CANNOT_BE_EMPTY", []);
-
 					if (!["ASC", "DESC"].includes(order))
 						throw new HttpBadRequest(
 							"INVALID_ORDER_VALUE: Valid values are: ASC | DESC"
