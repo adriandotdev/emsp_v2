@@ -4,7 +4,7 @@
 
 ### `POST Register Charging Point Operator - /ocpi/cpo/2.2/register`
 
-**Authorization: Bearer TOKEN**
+**Authorization: Basic TOKEN**
 
 **Request Body**
 
@@ -39,7 +39,7 @@
 
 ### `POST Upload CPO Logo - /ocpi/cpo/2.2/cpo/upload`
 
-**Authorization: Bearer ACCESS_TOKEN**
+**Authorization: Basic TOKEN**
 
 **Request Form Data**
 
@@ -60,7 +60,7 @@
 
 ### `POST Login API - /ocpi/cpo/api/auth/v1/login`
 
-**Authorization: Bearer TOKEN**
+**Authorization: Basic TOKEN**
 
 **Request Body**
 
@@ -95,16 +95,15 @@
 
 ---
 
-### `POST Upload Location Photos - /2.2/locations/photos/uploads`
+### `POST Upload Location Photos - /ocpi/cpo/api/v1/locations/photos/uploads`
 
 **Authorization: Bearer TOKEN**
 
 **Request Body**
 
-- location_photos
-  - maximum 5 files
-- location_id
-  - Location ID
+- location_photos -> Location photos to upload. This API only accepts maximum of five (5) files.
+
+- location_id -> Location ID
 
 **Response**
 
@@ -116,7 +115,29 @@
 }
 ```
 
-### `POST Refresh Token API - /ocpi/cpo/api/auth/v1/refresh`
+---
+
+### `PATCH Update Location Photo by ID - /ocpi/cpo/api/v1/locations/photos/uploads/:photo_id`
+
+**Authorization: Bearer TOKEN**
+
+**Request Body**
+
+- location_photo -> Location photo to upload as an update to the photo specified by ID
+
+**Response**
+
+```json
+{
+	"status": 200,
+	"data": [],
+	"message": "Success"
+}
+```
+
+---
+
+### `GET Refresh Token API - /ocpi/cpo/api/auth/v1/refresh`
 
 **Authorization: Bearer REFRESH_TOKEN**
 
@@ -246,11 +267,19 @@ query Evse {
 
 **Authorization: Bearer TOKEN**
 
+**Arguments**
+
+- location_name -> Location Name (Optional)
+- order_by -> Field to sort. Valid values are 'location', and 'date_created'
+- order -> Sorting order. Valid values are ASC, and DESC
+- limit -> Number of EVSEs to return
+- offset -> Starting EVSE to return
+
 **Response**
 
 - List of EVSEs
 
---
+---
 
 ## Query Locations
 
@@ -328,6 +357,11 @@ query Locations {
 ```
 
 **Authorization: Bearer TOKEN**
+
+**Arguments**
+
+- limit -> Number of Locations to return
+- offset -> Starting Location to return
 
 **Response**
 
