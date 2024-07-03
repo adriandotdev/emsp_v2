@@ -81,6 +81,7 @@ module.exports = class LocationService {
 	RegisterLocationAndEVSEs(data, connection) {
 		return new Promise(async (resolve, reject) => {
 			try {
+				// List of amenties from the database
 				const facilities = await this.#locationRepository.GetFacilities();
 				const parking_types = await this.#locationRepository.GetParkingTypes();
 				const parking_restrictions =
@@ -368,6 +369,31 @@ module.exports = class LocationService {
 			throw err;
 		} finally {
 			if (connection) connection.release();
+		}
+	}
+
+	/**
+	 *
+	 * @param {Array} photos
+	 * @param {Number} locationID
+	 */
+	async UploadLocationPhotos(photos, locationID) {
+		try {
+			if (!photos.length)
+				throw new HttpBadRequest("Please provide at least one photo", []);
+
+			const photosToUpload = photos.map((photo) => [
+				parseInt(locationID),
+				photo.filename,
+				new Date(),
+				new Date(),
+			]);
+
+			await this.#locationRepository.UploadLocationPhotos(photosToUpload);
+
+			return "SUCCESS";
+		} catch (err) {
+			throw err;
 		}
 	}
 };

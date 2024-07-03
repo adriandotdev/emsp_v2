@@ -95,6 +95,27 @@
 
 ---
 
+### `POST Upload Location Photos - /2.2/locations/photos/uploads`
+
+**Authorization: Bearer TOKEN**
+
+**Request Body**
+
+- location_photos
+  - maximum 5 files
+- location_id
+  - Location ID
+
+**Response**
+
+```json
+{
+	"status": 200,
+	"data": [],
+	"message": "Success"
+}
+```
+
 ### `POST Refresh Token API - /ocpi/cpo/api/auth/v1/refresh`
 
 **Authorization: Bearer REFRESH_TOKEN**
@@ -148,7 +169,7 @@
 
 ## GraphQL APIs
 
-## Query
+## Query EVSEs
 
 ```graphql
 query Evse {
@@ -228,3 +249,86 @@ query Evse {
 **Response**
 
 - List of EVSEs
+
+--
+
+## Query Locations
+
+```graphql
+query Locations {
+	locations(limit: 10, offset: 0) {
+		id
+		cpo_owner_id
+		name
+		address
+		address_lat
+		address_lng
+		city
+		region
+		postal_code
+		country_code
+		images
+		publish
+		date_created
+		date_modified
+		evses {
+			uid
+			evse_id
+			serial_number
+			meter_type
+			status
+			cpo_location_id
+			current_ws_connection_id
+			server_id
+			date_created
+			connectors {
+				id
+				evse_uid
+				connector_id
+				standard
+				format
+				power_type
+				max_voltage
+				max_amperage
+				max_electric_power
+				connector_type
+				rate_setting
+				status
+				date_created
+				date_modified
+			}
+			capabilities {
+				id
+				code
+				description
+			}
+			payment_types {
+				id
+				code
+				description
+			}
+		}
+		facilities {
+			id
+			code
+			description
+		}
+		parking_restrictions {
+			id
+			code
+			description
+		}
+		parking_types {
+			id
+			code
+			description
+		}
+	}
+}
+```
+
+**Authorization: Bearer TOKEN**
+
+**Response**
+
+- List of Locations

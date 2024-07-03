@@ -10,8 +10,9 @@ const { body, validationResult } = require("express-validator");
 const { HttpUnprocessableEntity } = require("../utils/HttpError");
 /**
  * @param {import('express').Express} app
+ * @param {import('multer').Multer} upload
  */
-module.exports = (app) => {
+module.exports = (app, upload) => {
 	const service = new LocationService(
 		new CSVRepository(),
 		new LocationRepository()
@@ -223,6 +224,12 @@ module.exports = (app) => {
 				.isArray()
 				.withMessage("Property: payment_types must be an array"),
 		],
+
+		/**
+		 * @param {import('express').Request} req
+		 * @param {import('express').Response} res
+		 * @param {import('express').NextFunction} next
+		 */
 		async (req, res, next) => {
 			try {
 				logger.info({
@@ -245,6 +252,28 @@ module.exports = (app) => {
 					.json({ status: 200, data: result, message: "Success" });
 			} catch (err) {
 				err.error_name = "WEBHOOK_ADD_EVSE_ERROR";
+				next(err);
+			}
+		}
+	);
+
+	app.post(
+		"/ocpi/cpo/2.2/locations/photos/uploads",
+		[tokenMiddleware.AccessTokenVerifier(), upload.array("location_photos", 5)],
+
+		/**
+		 * @param {import('express').Request} req
+		 * @param {import('express').Response} res
+		 * @param {import('express').NextFunction} next
+		 */
+		async (req, res, next) => {
+			try {
+				await service.UploadLocationPhotos(req.files, req.body.location_id);
+				return res
+					.status(200)
+					.json({ status: 200, data: [], message: "Success" });
+			} catch (err) {
+				req.error_name = "UPLOAD_LOCATION_PHOTOS_ERROR";
 				next(err);
 			}
 		}

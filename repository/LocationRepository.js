@@ -625,4 +625,20 @@ module.exports = class LocationRepository {
 			});
 		});
 	}
+
+	UploadLocationPhotos(photos) {
+		const QUERY = `
+            INSERT INTO
+                cpo_location_images (location_id, url, date_created, date_modified)
+            VALUES ?
+        `;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, [photos], (err, result) => {
+				if (err) reject(err);
+
+				resolve(result);
+			});
+		});
+	}
 };
