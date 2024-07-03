@@ -316,8 +316,8 @@ module.exports = class TokenMiddleware {
 
 				next();
 			} catch (err) {
-				next(err);
 				req.error_name = "VERIFY_CPO_TOKEN_ERROR";
+				next(err);
 			}
 		};
 	}

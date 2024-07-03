@@ -626,6 +626,25 @@ module.exports = class LocationRepository {
 		});
 	}
 
+	GetLocationPhotoByID(photoID) {
+		const QUERY = `
+            SELECT
+                url
+            FROM
+                cpo_location_images
+            WHERE
+                id =?
+        `;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, [photoID], (err, result) => {
+				if (err) reject(err);
+
+				resolve(result);
+			});
+		});
+	}
+
 	UploadLocationPhotos(photos) {
 		const QUERY = `
             INSERT INTO
@@ -635,6 +654,26 @@ module.exports = class LocationRepository {
 
 		return new Promise((resolve, reject) => {
 			mysql.query(QUERY, [photos], (err, result) => {
+				if (err) reject(err);
+
+				resolve(result);
+			});
+		});
+	}
+
+	UpdateLocationPhotoByID(photoID, photo) {
+		const QUERY = `
+            UPDATE
+                cpo_location_images
+            SET
+                url =?,
+                date_modified = NOW()
+            WHERE
+                id =?
+        `;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, [photo, photoID], (err, result) => {
 				if (err) reject(err);
 
 				resolve(result);

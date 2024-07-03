@@ -258,7 +258,7 @@ module.exports = (app, upload) => {
 	);
 
 	app.post(
-		"/ocpi/cpo/2.2/locations/photos/uploads",
+		"/ocpi/cpo/api/v1/locations/photos/uploads",
 		[tokenMiddleware.AccessTokenVerifier(), upload.array("location_photos", 5)],
 
 		/**
@@ -268,12 +268,68 @@ module.exports = (app, upload) => {
 		 */
 		async (req, res, next) => {
 			try {
+				logger.info({
+					UPLOAD_LOCATION_PHOTOS_REQUEST: {
+						data: {
+							location_id: req.body.location_id,
+							files: req.files.map((file) => file.filename),
+						},
+					},
+				});
+
 				await service.UploadLocationPhotos(req.files, req.body.location_id);
+
+				logger.info({
+					UPLOAD_LOCATION_PHOTOS_RESPONSE: {
+						message: "SUCCESS",
+					},
+				});
 				return res
 					.status(200)
 					.json({ status: 200, data: [], message: "Success" });
 			} catch (err) {
 				req.error_name = "UPLOAD_LOCATION_PHOTOS_ERROR";
+				next(err);
+			}
+		}
+	);
+
+	app.patch(
+		"/ocpi/cpo/api/v1/locations/photos/uploads/:photo_id",
+		[tokenMiddleware.AccessTokenVerifier(), upload.single("location_photo")],
+
+		/**
+		 * @param {import('express').Request} req
+		 * @param {import('express').Response} res
+		 * @param {import('express').NextFunction} next
+		 */
+		async (req, res, next) => {
+			try {
+				logger.info({
+					UPLOAD_PHOTO_BY_ID_REQUEST: {
+						data: {
+							photo_id: req.params.photo_id,
+							file_name: req.file.filename,
+						},
+					},
+				});
+
+				await service.UpdateLocationPhotoByID(
+					req.params.photo_id,
+					req.file.filename
+				);
+
+				logger.info({
+					UPLOAD_LOCATION_PHOTOS_RESPONSE: {
+						message: "SUCCESS",
+					},
+				});
+
+				return res
+					.status(200)
+					.json({ status: 200, data: [], message: "Success" });
+			} catch (err) {
+				req.error_name = "UPLOAD_PHOTO_BY_ID_ERROR";
 				next(err);
 			}
 		}

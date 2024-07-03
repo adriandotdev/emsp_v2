@@ -1,3 +1,6 @@
+const path = require("path");
+const fs = require("fs");
+
 const {
 	HttpBadRequest,
 	HttpInternalServerError,
@@ -390,6 +393,27 @@ module.exports = class LocationService {
 			]);
 
 			await this.#locationRepository.UploadLocationPhotos(photosToUpload);
+
+			return "SUCCESS";
+		} catch (err) {
+			throw err;
+		}
+	}
+
+	async UpdateLocationPhotoByID(photoID, photo) {
+		try {
+			const photoToUpdate = await this.#locationRepository.GetLocationPhotoByID(
+				photoID
+			);
+
+			if (!photoToUpdate.length)
+				throw new HttpBadRequest("LOCATION_PHOTO_NOT_EXISTS", []);
+
+			const filePath = path.join("public", "images", photoToUpdate[0].url);
+
+			await this.#locationRepository.UpdateLocationPhotoByID(photoID, photo);
+
+			if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
 			return "SUCCESS";
 		} catch (err) {
