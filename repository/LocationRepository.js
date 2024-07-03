@@ -71,7 +71,14 @@ module.exports = class LocationRepository {
 		});
 	}
 
-	GetEVSEsByCPOOwnerID(cpoOwnerID, locationName, orderBy, order) {
+	GetEVSEsByCPOOwnerID(
+		cpoOwnerID,
+		locationName,
+		orderBy,
+		order,
+		limit,
+		offset
+	) {
 		const QUERY = `
 			 SELECT
                 *
@@ -80,15 +87,17 @@ module.exports = class LocationRepository {
             INNER JOIN cpo_locations ON evse.cpo_location_id = cpo_locations.id
 			INNER JOIN cpo_owners ON cpo_locations.cpo_owner_id = cpo_owners.id
 			WHERE cpo_owners.id = ? ${
-				locationName ? `AND cpo_locations.name LIKE "${locationName}%"` : ""
+				locationName ? `AND cpo_locations.name LIKE "%${locationName}%"` : ""
 			}
 			ORDER BY ${
 				orderBy === "location" ? "cpo_locations.name" : "evse.date_created"
 			} ${order}
+			LIMIT ? OFFSET ?
 		`;
 
+		console.log(QUERY);
 		return new Promise((resolve, reject) => {
-			mysql.query(QUERY, [cpoOwnerID], (err, result) => {
+			mysql.query(QUERY, [cpoOwnerID, limit, offset], (err, result) => {
 				if (err) reject(err);
 
 				resolve(result);

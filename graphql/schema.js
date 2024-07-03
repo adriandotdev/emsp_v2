@@ -264,10 +264,12 @@ const RootQuery = new GraphQLObjectType({
 				location_name: { type: GraphQLString },
 				order_by: { type: GraphQLString },
 				order: { type: GraphQLString, defaultValue: "ASC" },
+				limit: { type: GraphQLInt, defaultValue: 10 },
+				offset: { type: GraphQLInt, defaultValue: 0 },
 			},
 			async resolve(parent, args, context) {
 				try {
-					const { location_name, order_by, order } = args;
+					const { location_name, order_by, order, limit, offset } = args;
 
 					if (!["ASC", "DESC"].includes(order))
 						throw new HttpBadRequest(
@@ -285,7 +287,9 @@ const RootQuery = new GraphQLObjectType({
 						tokenData.cpo_owner_id,
 						location_name,
 						order_by,
-						order
+						order,
+						limit,
+						offset
 					);
 
 					return result;
