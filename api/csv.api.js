@@ -44,6 +44,26 @@ module.exports = (app, csvUpload) => {
 		}
 	);
 
+	app.post(
+		"/ocpi/cpo/api/v2/locations/uploads/csv",
+		[tokenMiddleware.AccessTokenVerifier(), csvUpload.single("file")],
+		async (req, res, next) => {
+			try {
+				const locations = await csvService.ReadCSVFileV2(req.file.filename);
+				const result = await csvService.RegisterAllLocationsAndEVSEs(
+					req.party_id,
+					locations
+				);
+				return res
+					.status(200)
+					.json({ status: 200, data: result, message: "Success" });
+			} catch (err) {
+				req.error_name = "CSV_UPLOAD_ERROR_V2";
+				next(err);
+			}
+		}
+	);
+
 	app.use((err, req, res, next) => {
 		logger.error({
 			API_REQUEST_ERROR: {
