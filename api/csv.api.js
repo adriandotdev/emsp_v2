@@ -56,7 +56,7 @@ module.exports = (app, csvUpload) => {
 				);
 				return res
 					.status(200)
-					.json({ status: 200, data: result, message: "Success" });
+					.json({ status: 200, data: [], message: "Success" });
 			} catch (err) {
 				req.error_name = "CSV_UPLOAD_ERROR_V2";
 				next(err);

@@ -186,6 +186,27 @@
 
 ---
 
+### `POST Register Locations through CSV - /ocpi/cpo/api/v2/locations/uploads/csv`
+
+**Authorization: Bearer ACCESS_TOKEN**
+
+**Request Body (Form Data)**
+
+Key: file
+Valid File: .csv
+
+**Response**
+
+```json
+{
+	"status": 200,
+	"data": [],
+	"message": "Success"
+}
+```
+
+---
+
 ---
 
 ## GraphQL APIs
