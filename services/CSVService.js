@@ -29,6 +29,61 @@ module.exports = class CSVService {
 		this.#locationRepository = locationRepository;
 	}
 
+	async RegisterAllLocationsAndEVSEs(party_id, locations) {
+		let connection = null;
+
+		try {
+			connection = await this.#csvRepository.GetConnection();
+			connection.beginTransaction();
+
+			const promises = locations.map(async (location) => {
+				try {
+					return await this.RegisterLocationAndEVSEs2(
+						{ party_id, ...location },
+						connection
+					);
+				} catch (error) {
+					return error;
+				}
+			});
+
+			const results = await Promise.all(promises);
+
+			const errors = results.filter((result) => result instanceof Error);
+
+			if (errors.length > 0) {
+				logger.error({
+					message: "One or more operations failed. Transaction rolled back",
+					errors: errors.map((err) => err.message), // Log error messages
+				});
+
+				connection.rollback();
+
+				throw new HttpInternalServerError(
+					"CSV_CANNOT_BE_PROCESSED",
+					errors.map((err) => err.message).join(", ")
+				);
+			} else {
+				logger.info({ message: "TRANSACTION COMMITED" });
+				connection.commit();
+			}
+
+			return results;
+		} catch (error) {
+			console.log(error);
+			if (connection) {
+				logger.info({ message: "TRANSACTION ROLLBACK" });
+				connection.rollback();
+			}
+			throw error;
+		} finally {
+			if (connection) {
+				logger.info({ message: "CONNECTION RELEASED" });
+				connection.release();
+			}
+		}
+	}
+
 	ReadCSVFile(filename) {
 		return new Promise((resolve, reject) => {
 			const filePath = path.join("public", "csv", filename);
@@ -135,170 +190,7 @@ module.exports = class CSVService {
 		});
 	}
 
-	ReadCSVFileV2(filename) {
-		return new Promise((resolve, reject) => {
-			const filePath = path.join("public", "csv", filename);
-			const data = [];
-
-			fs.createReadStream(filePath)
-				.pipe(parse({ delimiter: ",", from_line: 2 }))
-				.on("data", (row) => {
-					data.push(row);
-				})
-				.on("end", () => {
-					fs.unlinkSync(filePath); // Delete the file after getting the data
-
-					const result = [];
-
-					// Helper function to find an evse by uid
-					const findEvseByUid = (evses, uid) =>
-						evses.find((evse) => evse.uid === uid);
-
-					data.forEach((entry) => {
-						const [
-							location,
-							address,
-							lat,
-							lng,
-							evse_sn,
-							kwh,
-							connectors,
-							format,
-							powerType,
-							maxVoltage,
-							maxAmperage,
-							maxElectricPower,
-							facilities,
-							parking_types,
-							capabilities,
-							payment_types,
-						] = entry;
-
-						// Find or create the location object
-						let locationObj = result.find(
-							(loc) => loc.name === location && loc.address === address
-						);
-
-						if (!locationObj) {
-							locationObj = {
-								name: location,
-								address: address,
-								lat,
-								lng,
-								evses: [],
-								facilities: facilities
-									? JSON.parse(facilities.slice(1, -1))
-									: [],
-								parking_types: parking_types
-									? JSON.parse(parking_types.slice(1, -1))
-									: [],
-								// parking_restrictions: parking_restrictions
-								// 	? JSON.parse(parking_restrictions.slice(1, -1))
-								// 	: [],
-							};
-							result.push(locationObj);
-						}
-
-						// Find or create the evse object
-						let evseObj = findEvseByUid(locationObj.evses, evse_sn);
-
-						if (!evseObj) {
-							evseObj = {
-								uid: evse_sn,
-								status: "OFFLINE",
-								kwh: parseFloat(kwh),
-								connectors: [],
-								capabilities: capabilities
-									? JSON.parse(capabilities.slice(1, -1))
-									: [],
-								payment_types: payment_types
-									? JSON.parse(payment_types.slice(1, -1))
-									: [],
-							};
-							locationObj.evses.push(evseObj);
-						}
-
-						if (!connectors.length)
-							return reject(
-								new HttpBadRequest("PLEASE_PROVIDE_ATLEAST_ONE_CONNECTOR")
-							);
-
-						JSON.parse(connectors.slice(1, -1)).forEach((connector) => {
-							// Add the connector
-							evseObj.connectors.push({
-								standard: connector,
-								format: format,
-								power_type: powerType,
-								max_voltage: parseFloat(maxVoltage),
-								max_amperage: parseFloat(maxAmperage),
-								max_electric_power: parseFloat(maxElectricPower),
-							});
-						});
-					});
-
-					resolve(result);
-				})
-				.on("error", (err) => {
-					reject(err);
-				});
-		});
-	}
-
-	async RegisterAllLocationsAndEVSEs(party_id, locations) {
-		let connection = null;
-
-		try {
-			connection = await this.#csvRepository.GetConnection();
-			connection.beginTransaction();
-
-			const promises = locations.map(async (location) => {
-				try {
-					return await this.RegisterLocationAndEVSEs2(
-						{ party_id, ...location },
-						connection
-					);
-				} catch (error) {
-					return error;
-				}
-			});
-
-			const results = await Promise.all(promises);
-
-			const errors = results.filter((result) => result instanceof Error);
-
-			if (errors.length > 0) {
-				logger.error({
-					message: "One or more operations failed. Transaction rolled back",
-					errors: errors.map((err) => err.message), // Log error messages
-				});
-
-				connection.rollback();
-
-				throw new HttpInternalServerError(
-					"CSV_CANNOT_BE_PROCESSED",
-					errors.map((err) => err.message).join(", ")
-				);
-			} else {
-				logger.info({ message: "TRANSACTION COMMITED" });
-				connection.commit();
-			}
-
-			return results;
-		} catch (error) {
-			console.log(error);
-			if (connection) {
-				logger.info({ message: "TRANSACTION ROLLBACK" });
-				connection.rollback();
-			}
-			throw error;
-		} finally {
-			if (connection) {
-				logger.info({ message: "CONNECTION RELEASED" });
-				connection.release();
-			}
-		}
-	}
-
+	// Version 1 implementation of registering parsed locations from the CSV file.
 	RegisterLocationAndEVSEs(data, connection) {
 		return new Promise(async (resolve, reject) => {
 			try {
@@ -523,17 +415,128 @@ module.exports = class CSVService {
 		});
 	}
 
+	ReadCSVFileV2(filename) {
+		return new Promise((resolve, reject) => {
+			const filePath = path.join("public", "csv", filename);
+			const data = [];
+
+			fs.createReadStream(filePath)
+				.pipe(parse({ delimiter: ",", from_line: 2 }))
+				.on("data", (row) => {
+					data.push(row);
+				})
+				.on("end", () => {
+					fs.unlinkSync(filePath); // Delete the file after getting the data
+
+					const result = [];
+
+					// Helper function to find an evse by uid
+					const findEvseByUid = (evses, uid) =>
+						evses.find((evse) => evse.uid === uid);
+
+					data.forEach((entry) => {
+						const [
+							location,
+							address,
+							lat,
+							lng,
+							evse_sn,
+							kwh,
+							connectors,
+							format,
+							powerType,
+							maxVoltage,
+							maxAmperage,
+							maxElectricPower,
+							facilities,
+							parking_types,
+							capabilities,
+							payment_types,
+						] = entry;
+
+						// Find or create the location object
+						let locationObj = result.find(
+							(loc) => loc.name === location && loc.address === address
+						);
+
+						if (!locationObj) {
+							locationObj = {
+								name: location,
+								address: address,
+								lat,
+								lng,
+								evses: [],
+								facilities: facilities
+									? JSON.parse(facilities.slice(1, -1))
+									: [],
+								parking_types: parking_types
+									? JSON.parse(parking_types.slice(1, -1))
+									: [],
+								// parking_restrictions: parking_restrictions
+								// 	? JSON.parse(parking_restrictions.slice(1, -1))
+								// 	: [],
+							};
+							result.push(locationObj);
+						}
+
+						// Find or create the evse object
+						let evseObj = findEvseByUid(locationObj.evses, evse_sn);
+
+						if (!evseObj) {
+							evseObj = {
+								uid: evse_sn,
+								status: "OFFLINE",
+								kwh: parseFloat(kwh),
+								connectors: [],
+								capabilities: capabilities
+									? JSON.parse(capabilities.slice(1, -1))
+									: [],
+								payment_types: payment_types
+									? JSON.parse(payment_types.slice(1, -1))
+									: [],
+							};
+							locationObj.evses.push(evseObj);
+						}
+
+						if (!connectors.length)
+							return reject(
+								new HttpBadRequest("PLEASE_PROVIDE_ATLEAST_ONE_CONNECTOR")
+							);
+
+						JSON.parse(connectors.slice(1, -1)).forEach((connector) => {
+							// Add the connector
+							evseObj.connectors.push({
+								standard: connector,
+								format: format,
+								power_type: powerType,
+								max_voltage: parseFloat(maxVoltage),
+								max_amperage: parseFloat(maxAmperage),
+								max_electric_power: parseFloat(maxElectricPower),
+							});
+						});
+					});
+
+					resolve(result);
+				})
+				.on("error", (err) => {
+					reject(err);
+				});
+		});
+	}
+
+	// Version 2 implementation of registering parsed locations from the CSV file.
 	RegisterLocationAndEVSEs2(data, connection) {
 		return new Promise(async (resolve, reject) => {
 			try {
 				const facilities = await this.#locationRepository.GetFacilities();
 				const parking_types = await this.#locationRepository.GetParkingTypes();
-				const parking_restrictions =
-					await this.#locationRepository.GetParkingRestrictions();
+				// const parking_restrictions =
+				// 	await this.#locationRepository.GetParkingRestrictions(); // Commented out since it is not in the requirements
 				const capabilities = await this.#locationRepository.GetCapabilities();
 				const payment_types = await this.#locationRepository.GetPaymentTypes();
 
 				const evses = data.evses;
+
 				const cpo = await this.#csvRepository.GetCPOOwnerIDByPartyID(
 					data.party_id
 				);
@@ -646,18 +649,6 @@ module.exports = class CSVService {
 						];
 					});
 
-					// Data mapping of Location's parking_restrictions
-					// cpoParkingRestrictions = data.parking_restrictions.map(
-					// 	(parkingRestriction) => {
-					// 		const index = parking_restrictions.findIndex(
-					// 			(f) => f.id === parkingRestriction
-					// 		);
-					// 		if (index === -1)
-					// 			throw new HttpBadRequest("INVALID_PARKING_RESTRICTIONS", []);
-					// 		return [parking_restrictions[index].id, locationResult.insertId];
-					// 	}
-					// );
-
 					if (cpoFacilities.length)
 						// Insertion of location's facilities
 						await this.#locationRepository.AddLocationFacilities(
@@ -671,12 +662,6 @@ module.exports = class CSVService {
 							cpoParkingTypes,
 							connection
 						);
-
-					// Insertion of location's parking_restrictions
-					// await this.#locationRepository.AddLocationParkingRestrictions(
-					// 	cpoParkingRestrictions,
-					// 	connection
-					// );
 				} else {
 					locationResult = { insertId: isExisting[0].id };
 				}
@@ -731,15 +716,17 @@ module.exports = class CSVService {
 						connection
 					);
 
-					await this.#locationRepository.AddEVSECapabilities(
-						evseCapabilities,
-						connection
-					);
+					if (evseCapabilities.length)
+						await this.#locationRepository.AddEVSECapabilities(
+							evseCapabilities,
+							connection
+						);
 
-					await this.#locationRepository.AddEVSEPaymentTypes(
-						evsePaymentTypes,
-						connection
-					);
+					if (evsePaymentTypes.length)
+						await this.#locationRepository.AddEVSEPaymentTypes(
+							evsePaymentTypes,
+							connection
+						);
 				}
 
 				logger.info({ message: "RESOLVED" });
