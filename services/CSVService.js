@@ -553,12 +553,22 @@ module.exports = class CSVService {
 
 				// Check if location name exists. If location exists, skip the insertion part of location.
 				if (!isExisting.length) {
-					// Request to Google Geocoding API for the data based on the address provided.
-					const geocodedAddress = await axios.get(
-						`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURI(
-							data.address
-						)}&key=${process.env.GOOGLE_GEO_API_KEY}`
-					);
+					let geocodedAddress;
+
+					if (data.lat && data.lng) {
+						geocodedAddress = await axios.get(
+							`https://maps.googleapis.com/maps/api/geocode/json?latlng=${data.lat},${data.lng}&key=${process.env.GOOGLE_GEO_API_KEY}`
+						);
+
+						console.log(geocodedAddress.data.results[0]?.address_components);
+					} else {
+						// Request to Google Geocoding API for the data based on the address provided.
+						geocodedAddress = await axios.get(
+							`https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURI(
+								data.address
+							)}&key=${process.env.GOOGLE_GEO_API_KEY}`
+						);
+					}
 
 					/**
 					 * Get the address_components object
@@ -590,6 +600,14 @@ module.exports = class CSVService {
 						.toUpperCase()
 						.trim();
 
+					const regionLongName = address_components.find((component) =>
+						component.types.includes("administrative_area_level_1")
+					)?.long_name;
+
+					const province = address_components.find((component) =>
+						component.types.includes("administrative_area_level_2")
+					)?.long_name;
+
 					/**
 					 * Get the postal code of the address when the type is 'postal_code'
 					 */
@@ -615,6 +633,7 @@ module.exports = class CSVService {
 							lng,
 							city,
 							region,
+							province: province ? province : regionLongName,
 							postal_code,
 							images: JSON.stringify([]),
 						},

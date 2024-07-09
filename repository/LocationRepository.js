@@ -395,6 +395,7 @@ module.exports = class LocationRepository {
 			lng,
 			city,
 			region,
+			province,
 			postal_code,
 			images,
 		},
@@ -403,9 +404,9 @@ module.exports = class LocationRepository {
 		const QUERY = `
 			INSERT INTO 
 				cpo_locations 
-					(cpo_owner_id, name, address, address_lat, address_lng, city, region, postal_code, country_code, images, date_created, date_modified)
+					(cpo_owner_id, name, address, address_lat, address_lng, city, region, province, postal_code, country_code, images, date_created, date_modified)
 			VALUES 
-					(?,?,?,?,?,?,?,?,?,?, NOW(), NOW());
+					(?,?,?,?,?,?,?,?,?,?,?, NOW(), NOW());
 		`;
 
 		return new Promise((resolve, reject) => {
@@ -419,6 +420,7 @@ module.exports = class LocationRepository {
 					lng,
 					city,
 					region,
+					province,
 					postal_code,
 					"PH",
 					images,
