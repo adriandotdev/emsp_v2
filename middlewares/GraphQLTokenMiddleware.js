@@ -91,4 +91,54 @@ module.exports = class GraphQLTokenMiddleware {
 			throw err;
 		}
 	}
+
+	async BasicTokenVerifier(authorization) {
+		/**
+		 * @param {import('express').Request} req
+		 * @param {import('express').Response} res
+		 * @param {import('express').NextFunction} next
+		 */
+
+		// logger
+		logger.info({
+			BASIC_TOKEN_VERIFIER_MIDDLEWARE: {
+				message: "REQUEST",
+			},
+		});
+
+		try {
+			const securityType = authorization?.split(" ")[0];
+			const token = authorization?.split(" ")[1];
+
+			if (securityType !== "Basic")
+				throw new HttpForbidden(
+					`Security Type: ${securityType} is invalid.`,
+					[]
+				);
+
+			const decodedToken = new Buffer.from(token, "base64")
+				.toString()
+				.split(":");
+
+			const username = decodedToken[0];
+			const password = decodedToken[1];
+
+			const result = await this.#repository.VerifyBasicToken(
+				username,
+				password
+			);
+
+			const status = result[0][0].STATUS;
+
+			if (status === "INVALID_BASIC_TOKEN") throw new HttpForbidden(status, []);
+
+			logger.info({
+				BASIC_TOKEN_VERIFIER_MIDDLEWARE_SUCCESS: { message: "SUCCESS" },
+			});
+
+			return status;
+		} catch (err) {
+			throw err;
+		}
+	}
 };
