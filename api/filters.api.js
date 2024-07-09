@@ -7,6 +7,7 @@ const TokenMiddleware = require("../middlewares/TokenMiddleware");
 module.exports = (app) => {
 	const tokenMiddleware = new TokenMiddleware();
 	const service = new FiltersService();
+
 	app.get(
 		"/ocpi/cpo/2.2/filters",
 		[tokenMiddleware.BasicTokenVerifier()],

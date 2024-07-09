@@ -1,7 +1,7 @@
 const mysql = require("../database/mysql");
 
 module.exports = class FiltersRepository {
-	async GetConnectorTypes() {
+	GetConnectorTypes() {
 		const QUERY = `
         
             SELECT 
@@ -20,7 +20,7 @@ module.exports = class FiltersRepository {
 		});
 	}
 
-	async GetFacilities() {
+	GetFacilities() {
 		const QUERY = `
 
             SELECT 
@@ -39,7 +39,7 @@ module.exports = class FiltersRepository {
 		});
 	}
 
-	async GetCapabilities() {
+	GetCapabilities() {
 		const QUERY = `
             SELECT
                 *
@@ -57,7 +57,7 @@ module.exports = class FiltersRepository {
 		});
 	}
 
-	async GetPaymentTypes() {
+	GetPaymentTypes() {
 		const QUERY = `
             SELECT
                 *
@@ -75,13 +75,53 @@ module.exports = class FiltersRepository {
 		});
 	}
 
-	async GetParkingTypes() {
+	GetParkingTypes() {
 		const QUERY = `
             SELECT
                 *
             FROM
                 parking_types
         `;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, (err, result) => {
+				if (err) {
+					reject(err);
+				}
+				resolve(result);
+			});
+		});
+	}
+
+	GetProvinces() {
+		const QUERY = `
+			SELECT DISTINCT 
+				province,
+				COUNT(*) AS total_locations
+			FROM
+				cpo_locations
+			GROUP BY 
+				province;
+		`;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, (err, result) => {
+				if (err) {
+					reject(err);
+				}
+				resolve(result);
+			});
+		});
+	}
+
+	GetCities() {
+		const QUERY = `
+
+			SELECT DISTINCT
+				city
+			FROM
+				cpo_locations
+		`;
 
 		return new Promise((resolve, reject) => {
 			mysql.query(QUERY, (err, result) => {

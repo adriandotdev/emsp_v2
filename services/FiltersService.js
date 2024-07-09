@@ -12,6 +12,8 @@ module.exports = class FiltersService {
 		const capabilities = await this.#repository.GetCapabilities();
 		const payment_types = await this.#repository.GetPaymentTypes();
 		const parking_types = await this.#repository.GetParkingTypes();
+		const provinces = await this.#repository.GetProvinces();
+		const cities = await this.#repository.GetCities();
 
 		return {
 			connector_types,
@@ -19,6 +21,8 @@ module.exports = class FiltersService {
 			capabilities,
 			payment_types,
 			parking_types,
+			provinces,
+			cities,
 		};
 	}
 };
