@@ -641,11 +641,10 @@ module.exports = class CSVService {
 
 						if (index === -1)
 							throw new HttpBadRequest("INVALID_PARKING_TYPES", []);
-
 						return [
 							parking_types[index].id,
 							locationResult.insertId,
-							parkingType,
+							parkingType === 1 ? "INDOOR" : "OUTDOOR",
 						];
 					});
 
