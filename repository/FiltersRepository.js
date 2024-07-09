@@ -132,4 +132,23 @@ module.exports = class FiltersRepository {
 			});
 		});
 	}
+	GetCitiesByProvince(province) {
+		const QUERY = `
+			SELECT DISTINCT
+				city
+			FROM
+				cpo_locations
+			WHERE
+				province = ?
+		`;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, [province], (err, result) => {
+				if (err) {
+					reject(err);
+				}
+				resolve(result);
+			});
+		});
+	}
 };

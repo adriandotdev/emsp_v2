@@ -29,4 +29,27 @@ module.exports = (app) => {
 			}
 		}
 	);
+
+	app.get(
+		"/ocpi/cpo/2.2/filters/cities/:province_name",
+		[tokenMiddleware.BasicTokenVerifier()],
+		/**
+		 *
+		 * @param {import('express').Request} req
+		 * @param {import('express').Response} res
+		 * @param {*} next
+		 */
+		async (req, res, next) => {
+			try {
+				const result = await service.GetCitiesByProvince(
+					req.params.province_name
+				);
+
+				res.status(200).json({ status: 200, data: result, message: "Success" });
+			} catch (err) {
+				req.error_name = "GET_CITIES_BY_PROVINCE_ERROR";
+				next(err);
+			}
+		}
+	);
 };

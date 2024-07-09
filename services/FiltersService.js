@@ -25,4 +25,8 @@ module.exports = class FiltersService {
 			cities,
 		};
 	}
+
+	async GetCitiesByProvince(province) {
+		return await this.#repository.GetCitiesByProvince(province);
+	}
 };
