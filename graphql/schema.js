@@ -26,6 +26,7 @@ const LOCATIONS = new GraphQLObjectType({
 		cpo_owner_id: { type: GraphQLInt },
 		name: { type: GraphQLString },
 		address: { type: GraphQLString },
+		distance: { type: GraphQLFloat },
 		address_lat: { type: GraphQLFloat },
 		address_lng: { type: GraphQLFloat },
 		city: { type: GraphQLString },
@@ -37,7 +38,7 @@ const LOCATIONS = new GraphQLObjectType({
 		date_created: { type: GraphQLString },
 		date_modified: { type: GraphQLString },
 		evses: {
-			type: new GraphQLList(EVSE),
+			type: new GraphQLList(EVSE_WITHOUT_LOCATIONS),
 			async resolve(parent, args) {
 				return await locationRepository.GetEVSEs(parent.id);
 			},
@@ -60,6 +61,39 @@ const LOCATIONS = new GraphQLObjectType({
 			type: new GraphQLList(PARKING_TYPE),
 			resolve: async function (parent) {
 				return await locationRepository.GetLocationParkingTypes(parent.id);
+			},
+		},
+	}),
+});
+
+const EVSE_WITHOUT_LOCATIONS = new GraphQLObjectType({
+	name: "EVSE_WITHOUT_LOCATIONS",
+	fields: () => ({
+		uid: { type: GraphQLString },
+		evse_id: { type: GraphQLString },
+		serial_number: { type: GraphQLString },
+		meter_type: { type: GraphQLString },
+		status: { type: GraphQLString },
+		cpo_location_id: { type: GraphQLInt },
+		current_ws_connection_id: { type: GraphQLString },
+		server_id: { type: GraphQLString },
+		date_created: { type: GraphQLString },
+		connectors: {
+			type: new GraphQLList(CONNECTOR),
+			async resolve(parent, args) {
+				return await locationRepository.GetConnectors(parent.uid);
+			},
+		},
+		capabilities: {
+			type: new GraphQLList(EVSE_CAPABILITY),
+			resolve: async function (parent) {
+				return await locationRepository.GetEVSECapabilities(parent.uid);
+			},
+		},
+		payment_types: {
+			type: new GraphQLList(PAYMENT_TYPE),
+			resolve: async function (parent) {
+				return await locationRepository.GetEVSEPaymentTypes(parent.uid);
 			},
 		},
 	}),
@@ -255,7 +289,7 @@ const RootQuery = new GraphQLObjectType({
 				}
 			},
 		},
-		evse: {
+		evses: {
 			/**
 			 * Return only the EVSE under of the logged in CPO
 			 */
