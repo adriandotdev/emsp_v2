@@ -207,6 +207,71 @@ Valid File: .csv
 
 ---
 
+### `GET Default Filters - /ocpi/cpo/2.2/filters`
+
+**Authorization: Basic BASIC_TOKEN**
+
+**Response**
+
+```json
+{
+	"status": 200,
+	"data": {
+		"connector_types": [
+			{
+				"id": 1,
+				"code": "TYPE_1",
+				"description": "Type 1"
+			},
+			{
+				"id": 2,
+				"code": "TYPE_2",
+				"description": "Type 2"
+			},
+			{
+				"id": 3,
+				"code": "CHADEMO",
+				"description": "CHADEMO"
+			},
+			{
+				"id": 4,
+				"code": "GBT",
+				"description": "GBT"
+			}
+		]
+		// Other default filters
+	},
+	"message": "Success"
+}
+```
+
+---
+
+### `GET List of Cities by Province - /ocpi/cpo/2.2/filters/cities/:province_name`
+
+**Authorization: Basic BASIC_TOKEN**
+
+**Parameters**
+
+- `province_name`
+  - Example: 'Zambales'
+
+**Response**
+
+```json
+{
+	"status": 200,
+	"data": [
+		{
+			"city": "Olongapo"
+		}
+	],
+	"message": "Success"
+}
+```
+
+---
+
 ---
 
 ## GraphQL APIs
@@ -387,3 +452,225 @@ query Locations {
 **Response**
 
 - List of Locations
+
+---
+
+### Query FindEV Locations
+
+```graphql
+query Find_ev_locations {
+	find_ev_locations {
+		id
+		cpo_owner_id
+		name
+		address
+		address_lat
+		address_lng
+		distance
+		city
+		region
+		postal_code
+		country_code
+		images
+		publish
+		date_created
+		date_modified
+		evses {
+			uid
+			evse_id
+			serial_number
+			meter_type
+			status
+			cpo_location_id
+			current_ws_connection_id
+			server_id
+			date_created
+			capabilities {
+				id
+				code
+				description
+			}
+			payment_types {
+				id
+				code
+				description
+			}
+			connectors {
+				id
+				evse_uid
+				connector_id
+				standard
+				format
+				power_type
+				max_voltage
+				max_amperage
+				max_electric_power
+				connector_type
+				rate_setting
+				status
+				date_created
+				date_modified
+			}
+		}
+		facilities {
+			id
+			code
+			description
+		}
+		parking_restrictions {
+			id
+			code
+			description
+		}
+		parking_types {
+			id
+			code
+			description
+		}
+	}
+}
+```
+
+**Authorization: Basic BASIC_TOKEN**
+
+**Response**
+
+- List of FindEV Locations
+
+---
+
+### Query FindEV Filter Locations
+
+```graphql
+query Find_ev_filter_locations {
+	find_ev_filter_locations(lat: 14.559192, lng: 121.017516) {
+		id
+		cpo_owner_id
+		name
+		address
+		distance
+		address_lat
+		address_lng
+		city
+		province
+		region
+		postal_code
+		country_code
+		images
+		publish
+		date_created
+		date_modified
+		evses {
+			uid
+			evse_id
+			serial_number
+			meter_type
+			status
+			cpo_location_id
+			current_ws_connection_id
+			server_id
+			date_created
+			connectors {
+				id
+				evse_uid
+				connector_id
+				standard
+				format
+				power_type
+				max_voltage
+				max_amperage
+				max_electric_power
+				connector_type
+				rate_setting
+				status
+				date_created
+				date_modified
+			}
+			capabilities {
+				id
+				code
+				description
+			}
+			payment_types {
+				id
+				code
+				description
+			}
+		}
+		facilities {
+			id
+			code
+			description
+		}
+		parking_restrictions {
+			id
+			code
+			description
+		}
+		parking_types {
+			id
+			code
+			description
+		}
+	}
+}
+```
+
+**Authorization: Basic BASIC_TOKEN**
+
+**Arguments**
+
+- **lat**
+  - Decimal format for location's latitude
+  - **Ex: 14.123451**
+- **lng**
+  - Decimal format for location's longitude
+  - **Ex: 121.123451**
+- **distance**
+  - Maximum radius of location to filter
+  - **Ex: 10**
+- **city**
+  - Location's city to filter
+  - **Ex: 'Cabuyao'**
+- **province**
+  - Location's province to filter
+  - **Ex: 'Laguna'**
+- facilities
+  - **Example input: ["CAFE","WIFI"]**
+  - VALID VALUES:
+    1. BANKS/ATM
+    2. CAFE
+    3. CINEMA
+    4. DRUGSTORE
+    5. GAS_STATION
+    6. GROCERIES
+    7. HARDWARE_SHOPS
+    8. HOTEL
+    9. MALL
+    10. PARKING_LOT
+    11. POOL
+    12. RESTAURANTS
+    13. RESTROOM
+    14. SHOPS
+    15. WATER_SPORTS
+    16. WIFI
+- capabilities
+  - **Example input: ["QR_READER","CREDIT_DEBIT_PAYABLE"]**
+  - VALID VALUES:
+    1. CREDIT_DEBIT_PAYABLE
+    2. QR_READER
+    3. PRIVILEGE_AND_LOYALTY
+- payment_types
+  - **Example input: ["GCASH","MAYA"]**
+  - VALID VALUES:
+    1. GCASH
+    2. MAYA
+- parking_types
+  - **Example input: ["INDOOR","OUTDOOR"]**
+  - VALID VALUES:
+    1. INDOOR
+    2. OUTDOOR
+
+**Response**
+
+- List of filtered locations
