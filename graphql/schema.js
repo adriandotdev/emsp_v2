@@ -332,6 +332,114 @@ const RootQuery = new GraphQLObjectType({
 				}
 			},
 		},
+
+		find_ev_locations: {
+			type: new GraphQLList(LOCATIONS),
+
+			async resolve(parent, args, context) {
+				try {
+					await tokenMiddleware.BasicTokenVerifier(context.auth);
+
+					const result = await locationRepository.GetFindEVLocations();
+
+					return result;
+				} catch (err) {
+					throw err;
+				}
+			},
+		},
+
+		find_ev_filter_locations: {
+			type: new GraphQLList(LOCATIONS),
+			args: {
+				lat: { type: GraphQLFloat },
+				lng: { type: GraphQLFloat },
+				facilities: { type: new GraphQLList(GraphQLString) },
+				capabilities: { type: new GraphQLList(GraphQLString) },
+				payment_types: { type: new GraphQLList(GraphQLString) },
+				parking_types: { type: new GraphQLList(GraphQLString) },
+				parking_restrictions: { type: new GraphQLList(GraphQLString) },
+				connector_types: { type: new GraphQLList(GraphQLString) },
+				power_types: { type: new GraphQLList(GraphQLString) },
+				distance: { type: GraphQLInt },
+				city: { type: GraphQLString },
+			},
+
+			async resolve(parent, args, context) {
+				await tokenMiddleware.BasicTokenVerifier(context.auth);
+
+				let facilities = "";
+				let capabilities = "";
+				let paymentTypes = "";
+				let parkingTypes = "";
+				let parkingRestrictions = "";
+				let connectorTypes = "";
+				let powerTypes = "";
+
+				args.facilities?.forEach((facility) => {
+					facilities += `'${facility}', `;
+				});
+
+				facilities = facilities.slice(0, facilities.length - 2);
+
+				args.capabilities?.forEach((capability) => {
+					capabilities += `'${capability}', `;
+				});
+
+				capabilities = capabilities.slice(0, capabilities.length - 2);
+
+				args.payment_types?.forEach((paymentType) => {
+					paymentTypes += `'${paymentType}', `;
+				});
+
+				paymentTypes = paymentTypes.slice(0, paymentTypes.length - 2);
+
+				args.parking_types?.forEach((parkingType) => {
+					parkingTypes += `'${parkingType}', `;
+				});
+
+				parkingTypes = parkingTypes.slice(0, parkingTypes.length - 2);
+
+				args.parking_restrictions?.forEach((parkingRestriction) => {
+					parkingRestrictions += `'${parkingRestriction}', `;
+				});
+
+				parkingRestrictions = parkingRestrictions.slice(
+					0,
+					parkingRestrictions.length - 2
+				);
+
+				args.connector_types?.forEach((connectorType) => {
+					connectorTypes += `'${connectorType}', `;
+				});
+
+				connectorTypes = connectorTypes.slice(0, connectorTypes.length - 2);
+
+				args.power_types?.forEach((powerType) => {
+					powerTypes += `'${powerType}', `;
+				});
+
+				powerTypes = powerTypes.slice(0, powerTypes.length - 2);
+
+				const result = await locationRepository.FilterFindEVLocations(
+					{
+						lat: args.lat,
+						lng: args.lng,
+					},
+					facilities,
+					capabilities,
+					paymentTypes,
+					parkingTypes,
+					parkingRestrictions,
+					connectorTypes,
+					powerTypes,
+					args.distance,
+					args.city
+				);
+
+				return result;
+			},
+		},
 	},
 });
 
