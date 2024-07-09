@@ -30,6 +30,7 @@ const LOCATIONS = new GraphQLObjectType({
 		address_lat: { type: GraphQLFloat },
 		address_lng: { type: GraphQLFloat },
 		city: { type: GraphQLString },
+		province: { type: GraphQLString },
 		region: { type: GraphQLString },
 		postal_code: { type: GraphQLString },
 		country_code: { type: GraphQLString },
@@ -363,9 +364,29 @@ const RootQuery = new GraphQLObjectType({
 				power_types: { type: new GraphQLList(GraphQLString) },
 				distance: { type: GraphQLInt },
 				city: { type: GraphQLString },
+				province: { type: GraphQLString },
 			},
 
 			async resolve(parent, args, context) {
+				logger.info({
+					FIND_EV_FILTER_LOCATIONS: {
+						data: {
+							lat: args.lat,
+							lng: args.lng,
+							facilities: args.facilities,
+							capabilities: args.capabilities,
+							payment_types: args.payment_types,
+							parking_types: args.parking_types,
+							parking_restrictions: args.parking_restrictions,
+							connector_types: args.connector_types,
+							power_types: args.power_types,
+							distance: args.distance,
+							city: args.city,
+							context,
+						},
+						message: "SUCCESS",
+					},
+				});
 				await tokenMiddleware.BasicTokenVerifier(context.auth);
 
 				let facilities = "";
@@ -434,9 +455,13 @@ const RootQuery = new GraphQLObjectType({
 					connectorTypes,
 					powerTypes,
 					args.distance,
-					args.city
+					args.city,
+					args.province
 				);
 
+				logger.info({
+					FIND_EV_FILTER_LOCATIONS_RESPONSE: { message: "SUCCESS" },
+				});
 				return result;
 			},
 		},

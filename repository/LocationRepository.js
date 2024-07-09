@@ -60,7 +60,8 @@ module.exports = class LocationRepository {
 		connector_types,
 		power_types,
 		distance,
-		city
+		city,
+		province
 	) {
 		const QUERY = `
 		SELECT 
@@ -90,44 +91,45 @@ module.exports = class LocationRepository {
 			LEFT JOIN evse_connector_power_types ON evse_connector_power_types.connector_id = evse_connectors.connector_id
 			LEFT JOIN power_types ON evse_connector_power_types.power_type_id = power_types.id
 		WHERE 
-			cpo_locations.cpo_owner_id IS NOT NULL AND
-			${facilities === "" ? `1 = 1` : `facilities.code IN (${facilities})`} AND
-			${
-				payment_types === ""
-					? `1 = 1`
-					: `payment_types.code IN (${payment_types})`
-			} AND 
+			cpo_locations.cpo_owner_id IS NOT NULL 
+			${facilities === "" ? `` : `AND facilities.code IN (${facilities})`} 
+			${payment_types === "" ? `` : `AND payment_types.code IN (${payment_types})`} 
 			${
 				parking_types === ""
-					? `1 = 1`
-					: `cpo_location_parking_types.tag IN (${parking_types})`
-			} AND
+					? ``
+					: `AND cpo_location_parking_types.tag IN (${parking_types})`
+			} 
 			${
 				parking_restrictions === ""
-					? `1 = 1`
-					: `parking_restrictions.code IN (${parking_restrictions})`
+					? ``
+					: `AND parking_restrictions.code IN (${parking_restrictions})`
 			} 
-			AND ${capabilities === "" ? `1 = 1` : `capabilities.code IN (${capabilities})`} 
-			AND ${
-				connector_types === ""
-					? `1 = 1`
-					: `connector_types.code IN (${connector_types})`
-			} 
-			AND ${power_types === "" ? `1 = 1` : `power_types.code IN (${power_types})`}
-			AND ${
-				!distance
-					? `1 = 1`
-					: `(6371 * 2 * ASIN(SQRT(
+			 ${capabilities === "" ? `` : `AND capabilities.code IN (${capabilities})`} 
+			 ${
+					connector_types === ""
+						? ``
+						: `AND evse_connectors.connector_type IN (${connector_types})`
+				} 
+			 ${
+					power_types === ""
+						? ``
+						: `AND evse_connectors.power_type IN (${power_types})`
+				}
+			 ${
+					!distance
+						? ``
+						: `AND (6371 * 2 * ASIN(SQRT(
 						POWER(SIN((? - ABS(address_lat)) * PI() / 180 / 2), 2) +
 						COS(? * PI() / 180) * COS(ABS(address_lat) * PI() / 180) *
 						POWER(SIN((? - address_lng) * PI() / 180 / 2), 2)
 					))) <= ?`
-			}
-			AND ${!city ? `1 = 1` : `LOWER(cpo_locations.city) = LOWER(?)`}
+				}
+			${!city ? `` : `AND cpo_locations.city = '${city}'`}
+			${!province ? `` : `AND cpo_locations.province = '${province}'`}
 		ORDER BY 
 			id
 	`;
-		// 	AND ${distance === "" ? `1 = 1` : `cpo_locations.distance <= ${distance}`}
+
 		const params = [
 			location.lat,
 			location.lat,
@@ -137,6 +139,7 @@ module.exports = class LocationRepository {
 			location.lng,
 			distance,
 			city,
+			province,
 		];
 
 		return new Promise((resolve, reject) => {
@@ -406,7 +409,7 @@ module.exports = class LocationRepository {
 				cpo_locations 
 					(cpo_owner_id, name, address, address_lat, address_lng, city, region, province, postal_code, country_code, images, date_created, date_modified)
 			VALUES 
-					(?,?,?,?,?,?,?,?,?,?,?, NOW(), NOW());
+					(?,?,?,?,?,?,?,?,?,?, NOW(), NOW());
 		`;
 
 		return new Promise((resolve, reject) => {
