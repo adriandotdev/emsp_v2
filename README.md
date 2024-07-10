@@ -272,6 +272,29 @@ Valid File: .csv
 
 ---
 
+### `GET Charging Point Operator (CPO) Details - /ocpi/cpo/2.2/details`
+
+**Authorization: Bearer TOKEN**
+
+**Response**
+
+```json
+{
+	"status": 200,
+	"data": {
+		"party_id": "EVCompany",
+		"cpo_owner_name": "EVC",
+		"contact_name": "Contact Name",
+		"contact_number": "09341123312",
+		"contact_email": "email@gmail.com",
+		"logo": "logo.png"
+	},
+	"message": "Success"
+}
+```
+
+---
+
 ---
 
 ## GraphQL APIs
@@ -674,3 +697,93 @@ query Find_ev_filter_locations {
 **Response**
 
 - List of filtered locations
+
+---
+
+### Query Get Location by ID
+
+```graphql
+query Location {
+	location(id: 755) {
+		id
+		cpo_owner_id
+		name
+		address
+		distance
+		address_lat
+		address_lng
+		city
+		province
+		region
+		postal_code
+		country_code
+		images
+		publish
+		date_created
+		date_modified
+		evses {
+			uid
+			evse_id
+			serial_number
+			meter_type
+			status
+			cpo_location_id
+			current_ws_connection_id
+			server_id
+			date_created
+			connectors {
+				id
+				evse_uid
+				connector_id
+				standard
+				format
+				power_type
+				max_voltage
+				max_amperage
+				max_electric_power
+				connector_type
+				rate_setting
+				status
+				date_created
+				date_modified
+			}
+			capabilities {
+				id
+				code
+				description
+			}
+			payment_types {
+				id
+				code
+				description
+			}
+		}
+		facilities {
+			id
+			code
+			description
+		}
+		parking_restrictions {
+			id
+			code
+			description
+		}
+		parking_types {
+			id
+			code
+			description
+		}
+	}
+}
+```
+
+**Authorization: Bearer TOKEN**
+
+**Arguments**
+
+- **id**
+  - Location's ID
+
+**Response**
+
+- Single Location Object

@@ -465,6 +465,25 @@ const RootQuery = new GraphQLObjectType({
 				return result;
 			},
 		},
+
+		location: {
+			type: LOCATIONS,
+			args: {
+				id: { type: GraphQLInt },
+			},
+
+			async resolve(parent, args, context) {
+				try {
+					await tokenMiddleware.AccessTokenVerifier(context.auth);
+
+					const result = await locationRepository.GetLocationsById(args.id);
+
+					return result[0];
+				} catch (err) {
+					throw err;
+				}
+			},
+		},
 	},
 });
 
