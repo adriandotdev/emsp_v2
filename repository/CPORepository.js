@@ -292,4 +292,29 @@ module.exports = class CPORepository {
 			});
 		});
 	}
+
+	GetCPODetailsByID(cpoID) {
+		const QUERY = `
+
+			SELECT 
+				party_id,
+				cpo_owner_name,
+				contact_name,
+				contact_number,
+				contact_email,
+				logo
+			FROM 
+				cpo_owners
+			WHERE 
+				id = ?
+		`;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, [cpoID], (err, result) => {
+				if (err) reject(err);
+
+				resolve(result);
+			});
+		});
+	}
 };

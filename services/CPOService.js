@@ -179,6 +179,18 @@ module.exports = class CPOService {
 		}
 	}
 
+	async GetCPODetailsByID(cpoID) {
+		try {
+			const cpoDetails = await this.#repository.GetCPODetailsByID(cpoID);
+
+			if (!cpoDetails.length) throw new HttpBadRequest("CPO_NOT_FOUND", []);
+
+			return cpoDetails[0];
+		} catch (err) {
+			throw err;
+		}
+	}
+
 	async #GeneratePartyID(companyName) {
 		/**
 		 * @Steps
