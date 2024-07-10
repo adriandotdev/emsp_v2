@@ -233,6 +233,44 @@ module.exports = (app, upload) => {
 		}
 	);
 
+	app.patch(
+		"/ocpi/cpo/2.2/cpo/logo/upload",
+		[tokenMiddleware.AccessTokenVerifier()],
+
+		/**
+		 * @param {import('express').Request} req
+		 * @param {import('express').Response} res
+		 */
+		async (req, res, next) => {
+			try {
+				logger.info({
+					UPDATE_CPO_LOGO_REQUEST: {
+						data: {
+							cpo_id: req.cpo_owner_id,
+							logo: req.body.logo,
+						},
+						message: "SUCCESS",
+					},
+				});
+
+				await service.UpdateCPOLogoByID(req.cpo_owner_id, req.body.logo);
+
+				logger.info({
+					UPDATE_CPO_LOGO_RESPONSE: {
+						message: "SUCCESS",
+					},
+				});
+
+				return res
+					.status(200)
+					.json({ status: 200, data: [], message: "Success" });
+			} catch (err) {
+				req.error_name = "UPDATE_CPO_LOGO_ERROR";
+				next(err);
+			}
+		}
+	);
+
 	app.get(
 		"/ocpi/cpo/2.2/details",
 		[tokenMiddleware.AccessTokenVerifier()],

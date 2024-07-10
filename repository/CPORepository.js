@@ -317,4 +317,45 @@ module.exports = class CPORepository {
 			});
 		});
 	}
+
+	GetCPOLogoByCPOID(cpoID) {
+		const QUERY = `
+
+			SELECT
+                logo
+            FROM
+                cpo_owners
+            WHERE
+                id = ?
+        `;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, [cpoID], (err, result) => {
+				if (err) reject(err);
+
+				resolve(result);
+			});
+		});
+	}
+
+	UpdateCPOLogoByID(cpoID, logo) {
+		const QUERY = `
+		
+			UPDATE
+				cpo_owners
+            SET
+			    logo =?,
+				date_modified = NOW()
+			WHERE
+				id = ?
+		`;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, [logo, cpoID], (err, result) => {
+				if (err) reject(err);
+
+				resolve(result);
+			});
+		});
+	}
 };

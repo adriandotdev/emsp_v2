@@ -1,3 +1,6 @@
+const fs = require("fs");
+const path = require("path");
+
 const CPORepository = require("../repository/CPORepository");
 const Crypto = require("../utils/Crypto");
 const { HttpBadRequest } = require("../utils/HttpError");
@@ -186,6 +189,26 @@ module.exports = class CPOService {
 			if (!cpoDetails.length) throw new HttpBadRequest("CPO_NOT_FOUND", []);
 
 			return cpoDetails[0];
+		} catch (err) {
+			throw err;
+		}
+	}
+
+	async UpdateCPOLogoByID(cpoID, newLogo) {
+		try {
+			const logo = await this.#repository.GetCPOLogoByCPOID(cpoID);
+
+			if (!logo) throw new HttpBadRequest("CPO_NOT_FOUND", []);
+
+			if (logo[0].logo !== "default.svg") {
+				const filePath = path.join("public", "images", logo[0].logo);
+
+				if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+			}
+
+			await this.#repository.UpdateCPOLogoByID(cpoID, newLogo);
+
+			return "SUCCESS";
 		} catch (err) {
 			throw err;
 		}
