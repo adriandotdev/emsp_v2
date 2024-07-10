@@ -409,7 +409,7 @@ module.exports = class LocationRepository {
 				cpo_locations 
 					(cpo_owner_id, name, address, address_lat, address_lng, city, region, province, postal_code, country_code, images, date_created, date_modified)
 			VALUES 
-					(?,?,?,?,?,?,?,?,?,?, NOW(), NOW());
+					(?,?,?,?,?,?,?,?,?,?,?, NOW(), NOW());
 		`;
 
 		return new Promise((resolve, reject) => {

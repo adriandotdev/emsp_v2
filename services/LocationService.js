@@ -146,6 +146,14 @@ module.exports = class LocationService {
 						.toUpperCase()
 						.trim();
 
+					const regionLongName = address_components.find((component) =>
+						component.types.includes("administrative_area_level_1")
+					)?.long_name;
+
+					const province = address_components.find((component) =>
+						component.types.includes("administrative_area_level_2")
+					)?.long_name;
+
 					/**
 					 * Get the postal code of the address when the type is 'postal_code'
 					 */
@@ -171,6 +179,7 @@ module.exports = class LocationService {
 							lng,
 							city,
 							region,
+							province: province ? province : regionLongName,
 							postal_code,
 							images: JSON.stringify([]),
 						},
