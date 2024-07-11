@@ -415,6 +415,32 @@ module.exports = class CSVService {
 		});
 	}
 
+	ReadTemporaryCSVFile(cpoID, filename) {
+		return new Promise((resolve, reject) => {
+			const filePath = path.join("public", "csv", filename);
+			const data = [];
+
+			fs.createReadStream(filePath)
+				.pipe(parse({ delimiter: ",", from_line: 2 }))
+				.on("data", (row) => {
+					data.push(row);
+				})
+				.on("end", async () => {
+					fs.unlinkSync(filePath); // Delete the file after getting the data
+
+					const csvLocations = data.map((entry) => {
+						return [cpoID, ...entry];
+					});
+
+					await this.#csvRepository.InsertTemporaryData(csvLocations);
+					resolve("SUCCESS");
+				})
+				.on("error", (err) => {
+					reject(err);
+				});
+		});
+	}
+
 	ReadCSVFileV2(filename) {
 		return new Promise((resolve, reject) => {
 			const filePath = path.join("public", "csv", filename);

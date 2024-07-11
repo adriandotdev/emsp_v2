@@ -47,6 +47,10 @@ module.exports = (app, csvUpload) => {
 	app.post(
 		"/ocpi/cpo/api/v2/locations/uploads/csv",
 		[tokenMiddleware.AccessTokenVerifier(), csvUpload.single("file")],
+		/**
+		 * @param {import('express').Request} req
+		 * @param {import('express').Response} res
+		 */
 		async (req, res, next) => {
 			try {
 				const locations = await csvService.ReadCSVFileV2(req.file.filename);
@@ -59,6 +63,30 @@ module.exports = (app, csvUpload) => {
 					.json({ status: 200, data: [], message: "Success" });
 			} catch (err) {
 				req.error_name = "CSV_UPLOAD_ERROR_V2";
+				next(err);
+			}
+		}
+	);
+
+	app.post(
+		"/ocpi/cpo/api/v2/locations/uploads/temp/csv",
+		[tokenMiddleware.AccessTokenVerifier(), csvUpload.single("file")],
+		/**
+		 * @param {import('express').Request} req
+		 * @param {import('express').Response} res
+		 */
+		async (req, res, next) => {
+			try {
+				await csvService.ReadTemporaryCSVFile(
+					req.cpo_owner_id,
+					req.file.filename
+				);
+
+				return res
+					.status(200)
+					.json({ status: 200, data: [], message: "Success" });
+			} catch (err) {
+				req.error_name = "CSV_UPLOAD_TEMPORARY_ERROR";
 				next(err);
 			}
 		}

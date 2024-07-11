@@ -53,4 +53,38 @@ module.exports = class CSVRepository {
 			});
 		});
 	}
+
+	InsertTemporaryData(data) {
+		const QUERY = `
+		
+			INSERT INTO csv_temporary_table
+				(cpo_owner_id,
+				location_name,
+				address,
+				address_lat,
+				address_lng,
+				evse_sn,
+				kwh,
+				connectors,
+				connector_format,
+				power_type,
+				max_voltage,
+				max_amperage,
+                max_electric_power,
+                location_facilities,
+                location_parking_types,
+                evse_capabilities,
+				evse_payment_types)
+			VALUES ?
+		`;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, [data], (err, result) => {
+				if (err) {
+					reject(err);
+				}
+				resolve(result);
+			});
+		});
+	}
 };
