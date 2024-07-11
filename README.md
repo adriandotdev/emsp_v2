@@ -295,6 +295,30 @@ Valid File: .csv
 
 ---
 
+### `PATCH Update CPO Logo by CPO Owner ID - /ocpi/cpo/2.2/cpo/logo/upload`
+
+**Authorization: Bearer TOKEN**
+
+**Request Body**
+
+```json
+{
+	"logo": "filename.png"
+}
+```
+
+**Response**
+
+```json
+{
+	"status": 200,
+	"data": [],
+	"message": "Success"
+}
+```
+
+---
+
 ---
 
 ## GraphQL APIs
