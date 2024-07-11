@@ -6,6 +6,8 @@ const logger = require("../config/winston");
 // Import your SERVICE HERE
 const CPOService = require("../services/CPOService");
 
+const CPORepository = require("../repository/CPORepository");
+
 // Import MISC HERE
 const { HttpUnprocessableEntity } = require("../utils/HttpError");
 /**
@@ -13,7 +15,7 @@ const { HttpUnprocessableEntity } = require("../utils/HttpError");
  * @param {import('multer').Multer} upload
  */
 module.exports = (app, upload) => {
-	const service = new CPOService();
+	const service = new CPOService(new CPORepository());
 	const tokenMiddleware = new TokenMiddleware();
 	/**
 	 * This function will be used by the express-validator for input validation,

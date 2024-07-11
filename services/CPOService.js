@@ -9,12 +9,29 @@ const Email = require("../utils/Email");
 const generator = require("generate-password");
 
 module.exports = class CPOService {
+	/**
+	 * @type {CPORepository}
+	 */
 	#repository;
 
-	constructor() {
-		this.#repository = new CPORepository();
+	constructor(repository) {
+		this.#repository = repository;
 	}
 
+	/**
+	 * Registers a Charge Point Operator (CPO).
+	 *
+	 * @async
+	 * @param {Object} data - The CPO registration data.
+	 * @param {string} data.cpo_owner_name - The name of the CPO owner.
+	 * @param {string} data.contact_email - The contact email of the CPO.
+	 * @param {string} data.username - The username for the CPO account.
+	 *
+	 * @returns {Promise<string>} The status of the CPO registration.
+	 *
+	 * @throws {HttpBadRequest} If the registration status is not "SUCCESS" and the status type is "bad_request".
+	 * @throws {Error} For any other errors that occur during the registration process.
+	 */
 	async RegisterCPO(data) {
 		try {
 			const result = await this.#repository.CheckIfCPOExistsByName(
@@ -29,7 +46,7 @@ module.exports = class CPOService {
 				party_id = result[0].party_id;
 				token_c = result[0].token_c;
 			} else {
-				party_id = await this.#GeneratePartyID(data.cpo_owner_name);
+				party_id = await this.GeneratePartyID(data.cpo_owner_name);
 				token_c = Crypto.Encrypt(JSON.stringify({ party_id }));
 			}
 
@@ -55,6 +72,7 @@ module.exports = class CPOService {
 			});
 
 			await email.SendFindEVPlugCredentials();
+
 			return cpoStatus;
 		} catch (err) {
 			throw err;
@@ -214,7 +232,7 @@ module.exports = class CPOService {
 		}
 	}
 
-	async #GeneratePartyID(companyName) {
+	async GeneratePartyID(companyName) {
 		/**
 		 * @Steps
 		 *
