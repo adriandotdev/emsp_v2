@@ -338,7 +338,20 @@ module.exports = class LocationService {
 				connection
 			);
 
-			if (evseResult[0][0].status_type === "bad_request") {
+			if (
+				evseResult[0][0].STATUS === "LOCATION_ID_DOES_NOT_EXISTS" &&
+				evseResult[0][0].status_type === "bad_request"
+			) {
+				throw new HttpBadRequest(
+					evseResult[0][0].STATUS + ":" + evse.location_id,
+					[]
+				);
+			}
+
+			if (
+				evseResult[0][0].STATUS === "DUPLICATE_EVSE_UID" &&
+				evseResult[0][0].status_type === "bad_request"
+			) {
 				throw new HttpBadRequest(evseResult[0][0].STATUS + ":" + evse.uid, []);
 			}
 
@@ -376,6 +389,8 @@ module.exports = class LocationService {
 			);
 
 			connection.commit();
+
+			return evseResult[0][0].STATUS;
 		} catch (err) {
 			if (connection) connection.rollback();
 			throw err;
