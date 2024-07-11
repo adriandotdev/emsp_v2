@@ -17,6 +17,7 @@ module.exports = (app, csvUpload) => {
 	);
 	const tokenMiddleware = new TokenMiddleware();
 
+	// Version v1.0 of API for uploading CSV for registering locations
 	app.post(
 		"/ocpi/cpo/api/v1/locations/uploads/csv",
 		[tokenMiddleware.AccessTokenVerifier(), csvUpload.single("file")],
@@ -44,6 +45,7 @@ module.exports = (app, csvUpload) => {
 		}
 	);
 
+	// Version v2.0 of API for uploading CSV for registering locations
 	app.post(
 		"/ocpi/cpo/api/v2/locations/uploads/csv",
 		[tokenMiddleware.AccessTokenVerifier(), csvUpload.single("file")],
@@ -68,6 +70,7 @@ module.exports = (app, csvUpload) => {
 		}
 	);
 
+	// Version v1.0 of API for uploading temporary CSV for temporary tables
 	app.post(
 		"/ocpi/cpo/api/v2/locations/uploads/temp/csv",
 		[tokenMiddleware.AccessTokenVerifier(), csvUpload.single("file")],

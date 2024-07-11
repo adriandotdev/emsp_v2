@@ -52,11 +52,7 @@ module.exports = (app) => {
 	}
 
 	/**
-	 * Login API
-	 *
-	 * @API /api/auth/v1/login
-	 *
-	 * This API will be used to authenticate the user by providing their username, and password.
+	 * API for account login
 	 */
 	app.post(
 		"/ocpi/cpo/api/auth/v1/login",
@@ -95,11 +91,7 @@ module.exports = (app) => {
 		}
 	);
 
-	/**
-	 * Logout API
-	 *
-	 * @API /api/auth/v1/logout */
-
+	/** API for account logout */
 	app.post(
 		"/ocpi/cpo/api/auth/v1/logout",
 		tokenMiddleware.AccessTokenVerifier(),
@@ -129,6 +121,7 @@ module.exports = (app) => {
 		}
 	);
 
+	/** API for generating new tokens (access and refresh tokens) */
 	app.get(
 		"/ocpi/cpo/api/auth/v1/refresh",
 		tokenMiddleware.RefreshTokenVerifier(),

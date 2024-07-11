@@ -36,6 +36,7 @@ module.exports = (app, upload) => {
 		}
 	}
 
+	// Webhook API for adding new locations
 	app.post(
 		"/ocpi/cpo/api/v1/webhook/locations/:country_code/:party_id",
 		[
@@ -166,6 +167,7 @@ module.exports = (app, upload) => {
 		}
 	);
 
+	// Webhook API for adding evse to a certain location
 	app.post(
 		"/ocpi/cpo/api/v1/webhook/evse/:country_code/:party_id",
 		[
@@ -257,6 +259,7 @@ module.exports = (app, upload) => {
 		}
 	);
 
+	// API for uploading location photos
 	app.post(
 		"/ocpi/cpo/api/v1/locations/photos/uploads",
 		[tokenMiddleware.AccessTokenVerifier(), upload.array("location_photos", 5)],
@@ -294,6 +297,7 @@ module.exports = (app, upload) => {
 		}
 	);
 
+	// API for updating location photo by ID
 	app.patch(
 		"/ocpi/cpo/api/v1/locations/photos/uploads/:photo_id",
 		[tokenMiddleware.AccessTokenVerifier(), upload.single("location_photo")],

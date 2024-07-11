@@ -8,6 +8,10 @@ module.exports = (app) => {
 	const tokenMiddleware = new TokenMiddleware();
 	const service = new FiltersService();
 
+	/**
+	 * API for retrieving default filters such as
+	 * location facilities, parking types, capabilities etc.
+	 */
 	app.get(
 		"/ocpi/cpo/2.2/filters",
 		[tokenMiddleware.BasicTokenVerifier()],
@@ -30,6 +34,10 @@ module.exports = (app) => {
 		}
 	);
 
+	/**
+	 * API for retrieving filters of cities
+	 * based on specified province name.
+	 */
 	app.get(
 		"/ocpi/cpo/2.2/filters/cities/:province_name",
 		[tokenMiddleware.BasicTokenVerifier()],

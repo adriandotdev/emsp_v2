@@ -32,6 +32,7 @@ module.exports = (app, upload) => {
 		}
 	}
 
+	// API for registering new Charging Point Operator.
 	app.post(
 		"/ocpi/cpo/2.2/register",
 		[
@@ -62,6 +63,7 @@ module.exports = (app, upload) => {
 				)
 				.withMessage("Error: Invalid email address"),
 			body("ocpp_ready")
+				.optional()
 				.notEmpty()
 				.withMessage("Missing required property: occp_ready")
 				.isBoolean({ strict: true })
@@ -100,6 +102,7 @@ module.exports = (app, upload) => {
 		}
 	);
 
+	// API for registering location with evses.
 	app.post(
 		"/ocpi/cpo/2.2/locations/:country_code/:party_id",
 		[
@@ -218,6 +221,7 @@ module.exports = (app, upload) => {
 		}
 	);
 
+	// API for uploading CPO logo.
 	app.post(
 		"/ocpi/cpo/2.2/cpo/upload",
 		[tokenMiddleware.BasicTokenVerifier(), upload.single("cpo_logo")],
@@ -233,6 +237,7 @@ module.exports = (app, upload) => {
 		}
 	);
 
+	// API for updating CPO logo.
 	app.patch(
 		"/ocpi/cpo/2.2/cpo/logo/upload",
 		[tokenMiddleware.AccessTokenVerifier()],
@@ -271,6 +276,7 @@ module.exports = (app, upload) => {
 		}
 	);
 
+	// API for retrieving CPO details.
 	app.get(
 		"/ocpi/cpo/2.2/details",
 		[tokenMiddleware.AccessTokenVerifier()],
