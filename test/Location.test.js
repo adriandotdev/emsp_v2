@@ -78,6 +78,13 @@ const mockLocationRepository = {
 	AddConnector: jest.fn().mockResolvedValue(),
 	AddEVSECapabilities: jest.fn().mockResolvedValue(),
 	AddEVSEPaymentTypes: jest.fn().mockResolvedValue(),
+	UploadLocationPhotos: jest.fn((photos, locationID) =>
+		jest.fn().mockResolvedValue("SUCCESS")
+	),
+	UpdateLocationPhotoByID: jest.fn((photoID, photo) =>
+		jest.fn().mockResolvedValue("SUCCESS")
+	),
+	GetLocationPhotoByID: jest.fn().mockResolvedValue([{ url: "filename.png" }]),
 };
 
 describe("Location", () => {
@@ -368,6 +375,58 @@ describe("Location", () => {
 			expect(mConnection.commit).toHaveBeenCalledTimes(0);
 			expect(mConnection.rollback).toHaveBeenCalledTimes(1);
 			expect(mConnection.release).toHaveBeenCalledTimes(1);
+		}
+	});
+
+	it("should return SUCCESS when UploadLocationPhotos is successful", async () => {
+		const result = await locationService.UploadLocationPhotos(
+			[{ filename: "filename1.png" }],
+			1
+		);
+
+		expect(result).toBe("SUCCESS");
+	});
+
+	it("should return BAD REQUEST when photos does not have any element", async () => {
+		try {
+			await locationService.UploadLocationPhotos([], 1);
+		} catch (err) {
+			expect(err).toBeInstanceOf(HttpBadRequest);
+			expect(err.message).toBe("Please provide at least one photo");
+			expect(mockLocationRepository.UploadLocationPhotos).toHaveBeenCalledTimes(
+				0
+			);
+		}
+	});
+
+	it("should return SUCCESS when UpdateLocationPhotoByID is succcessfull", async () => {
+		const result = await locationService.UpdateLocationPhotoByID(
+			1,
+			"new_photo.png"
+		);
+
+		expect(result).toBe("SUCCESS");
+		expect(
+			mockLocationRepository.UpdateLocationPhotoByID
+		).toHaveBeenCalledTimes(1);
+	});
+
+	it("should return BAD REQUEST when LOCATION_PHOTO_NOT_EXISTS", async () => {
+		mockLocationRepository.GetLocationPhotoByID = jest
+			.fn()
+			.mockResolvedValue([]);
+
+		try {
+			await locationService.UpdateLocationPhotoByID(1, "new_photo.png");
+		} catch (err) {
+			expect(err).toBeInstanceOf(HttpBadRequest);
+			expect(err.message).toBe("LOCATION_PHOTO_NOT_EXISTS");
+			expect(mockLocationRepository.GetLocationPhotoByID).toHaveBeenCalledTimes(
+				1
+			);
+			expect(
+				mockLocationRepository.UpdateLocationPhotoByID
+			).toHaveBeenCalledTimes(0);
 		}
 	});
 });
