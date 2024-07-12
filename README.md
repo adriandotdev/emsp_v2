@@ -1,8 +1,37 @@
 # EMSP Version 2.0 APIs
 
+- [EMSP Version 2.0 APIs](#emsp-version-20-apis)
+	- [REST APIs](#rest-apis)
+		- [POST Register Charge Point Operator - `/ocpi/cpo/2.2/register`](#post-register-charge-point-operator---ocpicpo22register)
+		- [POST Upload CPO Logo - `/ocpi/cpo/2.2/cpo/upload`](#post-upload-cpo-logo---ocpicpo22cpoupload)
+		- [POST Login API - `/ocpi/cpo/api/auth/v1/login`](#post-login-api---ocpicpoapiauthv1login)
+		- [POST Upload Location Photos - `/ocpi/cpo/api/v1/locations/photos/uploads`](#post-upload-location-photos---ocpicpoapiv1locationsphotosuploads)
+		- [PATCH Update Location Photo by ID - `/ocpi/cpo/api/v1/locations/photos/uploads/:photo_id`](#patch-update-location-photo-by-id---ocpicpoapiv1locationsphotosuploadsphoto_id)
+		- [GET Refresh Token API - `/ocpi/cpo/api/auth/v1/refresh`](#get-refresh-token-api---ocpicpoapiauthv1refresh)
+		- [POST Logout API - `/ocpi/cpo/api/auth/v1/logout`](#post-logout-api---ocpicpoapiauthv1logout)
+		- [POST Change Old Password API - `/ocpi/cpo/api/auth/v1/change-old-password`](#post-change-old-password-api---ocpicpoapiauthv1change-old-password)
+		- [POST Register Locations through CSV - `/ocpi/cpo/api/v2/locations/uploads/csv`](#post-register-locations-through-csv---ocpicpoapiv2locationsuploadscsv)
+		- [GET Default Filters - `/ocpi/cpo/2.2/filters`](#get-default-filters---ocpicpo22filters)
+		- [GET List of Cities by Province - `/ocpi/cpo/2.2/filters/cities/:province_name`](#get-list-of-cities-by-province---ocpicpo22filterscitiesprovince_name)
+		- [GET Charging Point Operator (CPO) Details - `/ocpi/cpo/2.2/details`](#get-charging-point-operator-cpo-details---ocpicpo22details)
+		- [PATCH Update CPO Logo by CPO Owner ID - `/ocpi/cpo/2.2/cpo/logo/upload`](#patch-update-cpo-logo-by-cpo-owner-id---ocpicpo22cpologoupload)
+	- [GraphQL APIs](#graphql-apis)
+		- [Query EVSEs](#query-evses)
+		- [Query Locations](#query-locations)
+		- [Query FindEV Locations](#query-findev-locations)
+		- [Query FindEV Filter Locations](#query-findev-filter-locations)
+		- [Query Get Location by ID](#query-get-location-by-id)
+	- [Webhooks](#webhooks)
+		- [POST Webhook Add Location - `/ocpi/cpo/api/v1/webhook/locations/:country_code/:party_id`](#post-webhook-add-location---ocpicpoapiv1webhooklocationscountry_codeparty_id)
+		- [POST Webhook Add EVSE - `/ocpi/cpo/api/v1/webhook/evse/:country_code/:party_id`](#post-webhook-add-evse---ocpicpoapiv1webhookevsecountry_codeparty_id)
+
 ## REST APIs
 
-### `POST Register Charging Point Operator - /ocpi/cpo/2.2/register`
+### POST Register Charge Point Operator - `/ocpi/cpo/2.2/register`
+
+**Description**
+
+Registers Charge Point Operator.
 
 **Authorization: Basic TOKEN**
 
@@ -35,9 +64,11 @@
 - HttpBadRequest
 - HttpInternalServerError
 
+[Back to Top](#emsp-version-20-apis)
+
 ---
 
-### `POST Upload CPO Logo - /ocpi/cpo/2.2/cpo/upload`
+### POST Upload CPO Logo - `/ocpi/cpo/2.2/cpo/upload`
 
 **Authorization: Basic TOKEN**
 
@@ -56,9 +87,11 @@
 }
 ```
 
+[Back to Top](#emsp-version-20-apis)
+
 ---
 
-### `POST Login API - /ocpi/cpo/api/auth/v1/login`
+### POST Login API - `/ocpi/cpo/api/auth/v1/login`
 
 **Authorization: Basic TOKEN**
 
@@ -93,9 +126,11 @@
 - Bad Request
 - Internal Server Error
 
+[Back to Top](#emsp-version-20-apis)
+
 ---
 
-### `POST Upload Location Photos - /ocpi/cpo/api/v1/locations/photos/uploads`
+### POST Upload Location Photos - `/ocpi/cpo/api/v1/locations/photos/uploads`
 
 **Authorization: Bearer TOKEN**
 
@@ -115,9 +150,11 @@
 }
 ```
 
+[Back to Top](#emsp-version-20-apis)
+
 ---
 
-### `PATCH Update Location Photo by ID - /ocpi/cpo/api/v1/locations/photos/uploads/:photo_id`
+### PATCH Update Location Photo by ID - `/ocpi/cpo/api/v1/locations/photos/uploads/:photo_id`
 
 **Authorization: Bearer TOKEN**
 
@@ -135,9 +172,11 @@
 }
 ```
 
+[Back to Top](#emsp-version-20-apis)
+
 ---
 
-### `GET Refresh Token API - /ocpi/cpo/api/auth/v1/refresh`
+### GET Refresh Token API - `/ocpi/cpo/api/auth/v1/refresh`
 
 **Authorization: Bearer REFRESH_TOKEN**
 
@@ -163,9 +202,11 @@
 - Unauthorized
 - Internal Server Error
 
+[Back to Top](#emsp-version-20-apis)
+
 ---
 
-### `POST Logout API - /ocpi/cpo/api/auth/v1/logout`
+### POST Logout API - `/ocpi/cpo/api/auth/v1/logout`
 
 **Authorization: Bearer ACCESS_TOKEN**
 
@@ -184,9 +225,11 @@
 - Unauthorized
 - Internal Server Error
 
+[Back to Top](#emsp-version-20-apis)
+
 ---
 
-### `POST Change Old Password API - /ocpi/cpo/api/auth/v1/change-old-password`
+### POST Change Old Password API - `/ocpi/cpo/api/auth/v1/change-old-password`
 
 **Authorization: Bearer ACCESS_TOKEN**
 
@@ -208,7 +251,7 @@
 
 ---
 
-### `POST Register Locations through CSV - /ocpi/cpo/api/v2/locations/uploads/csv`
+### POST Register Locations through CSV - `/ocpi/cpo/api/v2/locations/uploads/csv`
 
 **Authorization: Bearer ACCESS_TOKEN**
 
@@ -229,7 +272,7 @@ Valid File: .csv
 
 ---
 
-### `GET Default Filters - /ocpi/cpo/2.2/filters`
+### GET Default Filters - `/ocpi/cpo/2.2/filters`
 
 **Authorization: Basic BASIC_TOKEN**
 
@@ -269,7 +312,7 @@ Valid File: .csv
 
 ---
 
-### `GET List of Cities by Province - /ocpi/cpo/2.2/filters/cities/:province_name`
+### GET List of Cities by Province - `/ocpi/cpo/2.2/filters/cities/:province_name`
 
 **Authorization: Basic BASIC_TOKEN**
 
@@ -294,7 +337,7 @@ Valid File: .csv
 
 ---
 
-### `GET Charging Point Operator (CPO) Details - /ocpi/cpo/2.2/details`
+### GET Charging Point Operator (CPO) Details - `/ocpi/cpo/2.2/details`
 
 **Authorization: Bearer TOKEN**
 
@@ -317,7 +360,7 @@ Valid File: .csv
 
 ---
 
-### `PATCH Update CPO Logo by CPO Owner ID - /ocpi/cpo/2.2/cpo/logo/upload`
+### PATCH Update CPO Logo by CPO Owner ID - `/ocpi/cpo/2.2/cpo/logo/upload`
 
 **Authorization: Bearer TOKEN**
 
@@ -339,13 +382,15 @@ Valid File: .csv
 }
 ```
 
+[Back to Top](#emsp-version-20-apis)
+
 ---
 
 ---
 
 ## GraphQL APIs
 
-## Query EVSEs
+### Query EVSEs
 
 ```graphql
 query Evse {
@@ -434,9 +479,11 @@ query Evse {
 
 - List of EVSEs
 
+[Back to Top](#emsp-version-20-apis)
+
 ---
 
-## Query Locations
+### Query Locations
 
 ```graphql
 query Locations {
@@ -521,6 +568,8 @@ query Locations {
 **Response**
 
 - List of Locations
+
+[Back to Top](#emsp-version-20-apis)
 
 ---
 
@@ -744,6 +793,8 @@ query Find_ev_filter_locations {
 
 - List of filtered locations
 
+[Back to Top](#emsp-version-20-apis)
+
 ---
 
 ### Query Get Location by ID
@@ -833,3 +884,137 @@ query Location {
 **Response**
 
 - Single Location Object
+
+[Back to Top](#emsp-version-20-apis)
+
+---
+
+---
+
+## Webhooks
+
+### POST Webhook Add Location - `/ocpi/cpo/api/v1/webhook/locations/:country_code/:party_id`
+
+**Authorization: Bearer CPO_TOKEN_C**
+
+**Parameters**
+
+- country_code: Location's country code.
+- party_id: Location's associated party ID.
+
+**Requst Body**
+
+```json
+{
+	"locations": [
+		{
+			"name": "Yan-Yan's Store",
+			"address": "BLK 137 LOT 3, Phase 2, Cabuyao, Laguna",
+			"lat": "14.12345",
+			"lng": "121.12345",
+			"evses": [
+				{
+					"uid": "123456689",
+					"status": "AVAILABLE",
+					"meter_type": "AC",
+					"kwh": 7,
+					"connectors": [
+						{
+							"standard": "CHADEMO",
+							"format": "SOCKET",
+							"power_type": "AC",
+							"max_voltage": 230,
+							"max_amperage": 16,
+							"max_electric_power": 120
+						}
+					],
+					"capabilities": ["CREDIT_DEBIT_PAYABLE", "QR_READER"],
+					"payment_types": ["GCASH", "MAYA"]
+				},
+				{
+					"uid": "123",
+					"status": "AVAILABLE",
+					"meter_type": "AC",
+					"kwh": 7,
+					"connectors": [
+						{
+							"standard": "TYPE_2",
+							"format": "SOCKET",
+							"power_type": "AC",
+							"max_voltage": 230,
+							"max_amperage": 16,
+							"max_electric_power": 120
+						}
+					],
+					"capabilities": ["CREDIT_DEBIT_PAYABLE", "QR_READER"],
+					"payment_types": ["GCASH", "MAYA"]
+				}
+			],
+			"facilities": ["CINEMA", "CAFE"],
+			"parking_types": ["INDOOR"],
+			"parking_restrictions": ["CUSTOMERS", "DISABLED"]
+		}
+	]
+}
+```
+
+**Response**
+
+```json
+{
+	"status": 200,
+	"data": [
+		{
+			"location_id": 754
+		}
+	], // list of location id
+	"message": "Success"
+}
+```
+
+[Back to Top](#emsp-version-20-apis)
+
+---
+
+### POST Webhook Add EVSE - `/ocpi/cpo/api/v1/webhook/evse/:country_code/:party_id`
+
+**Authorization: Bearer CPO_TOKEN_C**
+
+**Parameters**
+
+- country_code: Location's country code.
+- party_id: Location's associated party ID.
+
+**Request Body**
+
+```json
+{
+	"location_id": 176,
+	"uid": "123456689",
+	"status": "AVAILABLE",
+	"meter_type": "AC",
+	"kwh": 7,
+	"connectors": [
+		{
+			"standard": "CHADEMO",
+			"format": "SOCKET",
+			"power_type": "AC",
+			"max_voltage": 230,
+			"max_amperage": 16,
+			"max_electric_power": 120
+		}
+	],
+	"capabilities": ["CREDIT_DEBIT_PAYABLE", "QR_READER"],
+	"payment_types": ["GCASH", "MAYA"]
+}
+```
+
+**Response**
+
+```json
+{
+	"status": 200,
+	"data": "SUCCESS",
+	"message": "Success"
+}
+```
