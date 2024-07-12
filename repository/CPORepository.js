@@ -302,7 +302,8 @@ module.exports = class CPORepository {
 				contact_name,
 				contact_number,
 				contact_email,
-				logo
+				logo,
+				token_c
 			FROM 
 				cpo_owners
 			WHERE 
