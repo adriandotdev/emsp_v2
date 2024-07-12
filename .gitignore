@@ -4,3 +4,4 @@
 .env
 .VSCodeCounter
 /public/
+/coverage

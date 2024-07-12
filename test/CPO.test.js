@@ -67,6 +67,8 @@ const mockCPORepository = {
 			logo: "test.svg",
 		},
 	]),
+	GetCPOLogoByCPOID: jest.fn().mockResolvedValue([{ logo: "logo.svg" }]),
+	UpdateCPOLogoByID: jest.fn(),
 };
 
 describe("Charging Operator Service Test", () => {
@@ -266,6 +268,25 @@ describe("Charging Operator Service Test", () => {
 		}
 	});
 
+	it("should throw BAD_REQUEST when DUPLICATE_EVSE_UID error is thrown when adding EVSE", async () => {
+		mockCPORepository.GetCPOOwnerIDByPartyID.mockResolvedValue([{ id: 1 }]);
+		mockCPORepository.RegisterEVSE.mockResolvedValue([
+			[{ STATUS: "DUPLICATE_EVSE_UID", status_type: "bad_request" }],
+		]);
+
+		try {
+			await service.RegisterLocationAndEVSEs(data);
+		} catch (err) {
+			expect(err).toBeInstanceOf(HttpBadRequest);
+			expect(err.message).toBe("DUPLICATE_EVSE_UID");
+			expect(mockCPORepository.GetConnection).toHaveBeenCalledTimes(1);
+			expect(mockCPORepository.GetCPOOwnerIDByPartyID).toHaveBeenCalledTimes(1);
+			expect(mConnection.commit).toHaveBeenCalledTimes(0);
+			expect(mConnection.rollback).toHaveBeenCalledTimes(1);
+			expect(mConnection.release).toHaveBeenCalledTimes(1);
+		}
+	});
+
 	it("should successfully retrieve CPO Details", async () => {
 		const result = await service.GetCPODetailsByID(1);
 
@@ -279,7 +300,7 @@ describe("Charging Operator Service Test", () => {
 		});
 	});
 
-	it("shoud throw BAD REQUEST when CPO is not found", async () => {
+	it("should throw BAD REQUEST when CPO is not found", async () => {
 		mockCPORepository.GetCPODetailsByID.mockResolvedValue([]);
 
 		try {
@@ -289,5 +310,21 @@ describe("Charging Operator Service Test", () => {
 			expect(err.message).toBe("CPO_NOT_FOUND");
 			expect(mockCPORepository.GetCPODetailsByID).toHaveBeenCalledTimes(1);
 		}
+	});
+
+	it("should successfully UPDATE CPO LOGO BY ID", async () => {
+		const result = await service.UpdateCPOLogoByID(1, "new_logo.svg");
+
+		expect(result).toBe("SUCCESS");
+	});
+
+	it("should delete cpo logo when it is not equal to default.svg", async () => {
+		mockCPORepository.GetCPOLogoByCPOID.mockResolvedValue([
+			{ logo: "default.svg" },
+		]);
+
+		const result = await service.UpdateCPOLogoByID(1, "new_logo.svg");
+
+		expect(result).toBe("SUCCESS");
 	});
 });
