@@ -42,13 +42,13 @@ module.exports = class CPOService {
 			let token_c = null;
 			let password = generator.generate({ length: 8, numbers: true });
 
-			if (result.length) {
-				party_id = result[0].party_id;
-				token_c = result[0].token_c;
-			} else {
-				party_id = await this.GeneratePartyID(data.cpo_owner_name);
-				token_c = Crypto.Encrypt(JSON.stringify({ party_id }));
-			}
+			// if (result.length) {
+			// 	party_id = result[0].party_id;
+			// 	token_c = result[0].token_c;
+			// } else {
+			party_id = await this.GeneratePartyID(data.cpo_owner_name);
+			token_c = Crypto.Encrypt(JSON.stringify({ party_id }));
+			// }
 
 			const cpoResult = await this.#repository.RegisterCPO({
 				...data,
