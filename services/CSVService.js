@@ -428,10 +428,15 @@ module.exports = class CSVService {
 				.on("end", async () => {
 					fs.unlinkSync(filePath); // Delete the file after getting the data
 
-					const csvLocations = data.map((entry) => {
+					const filteredData = data.filter((row) =>
+						row.some((field) => field.trim() !== "")
+					);
+
+					const csvLocations = filteredData.map((entry) => {
 						return [cpoID, ...entry];
 					});
 
+					console.log(csvLocations);
 					await this.#csvRepository.InsertTemporaryData(csvLocations);
 					resolve("SUCCESS");
 				})

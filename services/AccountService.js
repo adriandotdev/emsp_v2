@@ -64,8 +64,6 @@ module.exports = class AccountService {
 				connection
 			);
 
-			console.log(result);
-
 			/** If user is not found */
 			if (result.length < 1) {
 				winston.error({
