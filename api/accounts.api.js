@@ -301,7 +301,7 @@ module.exports = (app) => {
 	);
 
 	app.post(
-		"/login/api/auth/v1/change-old-password",
+		"/ocpi/cpo/api/auth/v1/change-old-password",
 		[
 			tokenMiddleware.AccessTokenVerifier(),
 			body("old_password")
@@ -336,7 +336,9 @@ module.exports = (app) => {
 					...req.body,
 				});
 
-				return res.status(200).json({ status: 200, message: result });
+				return res
+					.status(200)
+					.json({ status: 200, data: result, message: "Success" });
 			} catch (err) {
 				next(err);
 			}

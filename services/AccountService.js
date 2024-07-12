@@ -473,15 +473,11 @@ module.exports = class AccountService {
 			const result = await this.#repository.ChangeOldPassword({ ...payload });
 
 			const STATUS = result[0][0].STATUS;
+			const statusType = result[0][0].status_type;
 
-			switch (STATUS) {
-				case "INCORRECT_OLD_PASSWORD":
-					throw new HttpBadRequest(STATUS, []);
-				case "NEW_PASSWORD_DOES_NOT_MATCH":
-					throw new HttpBadRequest(STATUS, []);
-				default:
-					return "SUCCESS";
-			}
+			if (statusType === "bad_request") throw new HttpBadRequest(STATUS, []);
+
+			return "SUCCESS";
 		} catch (err) {
 			throw err;
 		}

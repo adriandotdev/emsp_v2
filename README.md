@@ -186,6 +186,28 @@
 
 ---
 
+### `POST Change Old Password API - /ocpi/cpo/api/auth/v1/change-old-password`
+
+**Authorization: Bearer ACCESS_TOKEN**
+
+**Response**
+
+```json
+{
+	"status": 200,
+	"data": "SUCCESS",
+	"message": "Success"
+}
+```
+
+**Errors**
+
+- Unauthorized
+- Internal Server Error
+- Bad Request
+
+---
+
 ### `POST Register Locations through CSV - /ocpi/cpo/api/v2/locations/uploads/csv`
 
 **Authorization: Bearer ACCESS_TOKEN**

@@ -420,7 +420,7 @@ module.exports = class AccountRepository {
 	 * @returns {Promise<Object>} A promise that resolves to the result of the old password change operation.
 	 */
 	ChangeOldPassword({ user_id, old_password, new_password, confirm_password }) {
-		const QUERY = `call WEB_USER_CHANGE_OLD_PASSWORD(?,?,?,?)`;
+		const QUERY = `call EMSP_CHANGE_OLD_PASSWORD(?,?,?,?)`;
 
 		return new Promise((resolve, reject) => {
 			mysql.query(
