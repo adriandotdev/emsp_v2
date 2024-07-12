@@ -57,6 +57,16 @@ const mockCPORepository = {
 	RegisterLocation: jest.fn().mockResolvedValue({ insertId: 1 }),
 	RegisterEVSE: jest.fn().mockResolvedValue([[{ STATUS: "SUCCESS" }]]),
 	AddConnector: jest.fn(),
+	GetCPODetailsByID: jest.fn().mockResolvedValue([
+		{
+			party_id: "TES",
+			cpo_owner_name: "CPO Owner",
+			contact_name: "Contact Person",
+			contact_number: "09341123312",
+			contact_email: "test@gmail.com",
+			logo: "test.svg",
+		},
+	]),
 };
 
 describe("Charging Operator Service Test", () => {
@@ -238,14 +248,46 @@ describe("Charging Operator Service Test", () => {
 
 	it("should return BAD REQUEST when LOCATION NOT FOUND", async () => {
 		try {
+			mockCPORepository.GetCPOOwnerIDByPartyID.mockResolvedValue([{ id: 1 }]);
+			axios.get.mockResolvedValueOnce({
+				data: {
+					results: [],
+				},
+			});
+			await service.RegisterLocationAndEVSEs(data);
 		} catch (err) {
 			expect(err).toBeInstanceOf(HttpBadRequest);
-			expect(err.message).toBe("PARTY_ID_NOT_EXISTS");
+			expect(err.message).toBe("LOCATION_NOT_FOUND");
 			expect(mockCPORepository.GetConnection).toHaveBeenCalledTimes(1);
 			expect(mockCPORepository.GetCPOOwnerIDByPartyID).toHaveBeenCalledTimes(1);
 			expect(mConnection.commit).toHaveBeenCalledTimes(0);
 			expect(mConnection.rollback).toHaveBeenCalledTimes(1);
 			expect(mConnection.release).toHaveBeenCalledTimes(1);
+		}
+	});
+
+	it("should successfully retrieve CPO Details", async () => {
+		const result = await service.GetCPODetailsByID(1);
+
+		expect(result).toEqual({
+			party_id: "TES",
+			cpo_owner_name: "CPO Owner",
+			contact_name: "Contact Person",
+			contact_number: "09341123312",
+			contact_email: "test@gmail.com",
+			logo: "test.svg",
+		});
+	});
+
+	it("shoud throw BAD REQUEST when CPO is not found", async () => {
+		mockCPORepository.GetCPODetailsByID.mockResolvedValue([]);
+
+		try {
+			await service.GetCPODetailsByID(1);
+		} catch (err) {
+			expect(err).toBeInstanceOf(HttpBadRequest);
+			expect(err.message).toBe("CPO_NOT_FOUND");
+			expect(mockCPORepository.GetCPODetailsByID).toHaveBeenCalledTimes(1);
 		}
 	});
 });
