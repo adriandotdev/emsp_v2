@@ -216,7 +216,7 @@ module.exports = class CPOService {
 		try {
 			const logo = await this.#repository.GetCPOLogoByCPOID(cpoID);
 
-			if (!logo) throw new HttpBadRequest("CPO_NOT_FOUND", []);
+			if (!logo.length) throw new HttpBadRequest("CPO_NOT_FOUND", []);
 
 			if (logo[0].logo !== "default.svg") {
 				const filePath = path.join("public", "images", logo[0].logo);

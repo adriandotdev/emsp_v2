@@ -69,6 +69,7 @@ const mockCPORepository = {
 	]),
 	GetCPOLogoByCPOID: jest.fn().mockResolvedValue([{ logo: "logo.svg" }]),
 	UpdateCPOLogoByID: jest.fn(),
+	GetCPODetails: jest.fn(),
 };
 
 describe("Charging Operator Service Test", () => {
@@ -186,7 +187,9 @@ describe("Charging Operator Service Test", () => {
 	});
 
 	it("should return BAD REQUEST when status is not SUCCESS", async () => {
-		CPOService.prototype.GeneratePartyID = jest.fn().mockResolvedValue("TES");
+		CPOService.prototype.GeneratePartyID = jest
+			.fn()
+			.mockResolvedValueOnce("TES");
 
 		mockCPORepository.RegisterCPO = jest
 			.fn()
@@ -326,5 +329,27 @@ describe("Charging Operator Service Test", () => {
 		const result = await service.UpdateCPOLogoByID(1, "new_logo.svg");
 
 		expect(result).toBe("SUCCESS");
+	});
+
+	it("should throw BAD REQUEST when CPO NOT FOUND", async () => {
+		mockCPORepository.GetCPOLogoByCPOID.mockResolvedValue([]);
+
+		try {
+			await service.UpdateCPOLogoByID(1, "new_logo.svg");
+		} catch (err) {
+			expect(err).toBeInstanceOf(HttpBadRequest);
+			expect(err.message).toBe("CPO_NOT_FOUND");
+			expect(mockCPORepository.UpdateCPOLogoByID).toHaveBeenCalledTimes(0);
+		}
+	});
+
+	it("should successfully Generate Party ID", async () => {
+		service.GeneratePartyID.mockResolvedValue("EXA");
+		mockCPORepository.GetCPODetails.mockResolvedValue([]);
+
+		const companyName = "Example Company";
+		const result = await service.GeneratePartyID(companyName);
+
+		expect(result).toBe("EXA");
 	});
 });
