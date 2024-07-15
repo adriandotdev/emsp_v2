@@ -778,6 +778,29 @@ module.exports = class LocationRepository {
 		});
 	}
 
+	GetLocationImages(locationID) {
+		const QUERY = `
+            SELECT
+                id,
+				location_id,
+                url,
+				date_created,
+                date_modified
+            FROM
+                cpo_location_images
+            WHERE
+                location_id =?
+        `;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, [locationID], (err, result) => {
+				if (err) reject(err);
+
+				resolve(result);
+			});
+		});
+	}
+
 	UploadLocationPhotos(photos) {
 		const QUERY = `
             INSERT INTO

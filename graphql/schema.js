@@ -34,7 +34,12 @@ const LOCATIONS = new GraphQLObjectType({
 		region: { type: GraphQLString },
 		postal_code: { type: GraphQLString },
 		country_code: { type: GraphQLString },
-		images: { type: new GraphQLList(GraphQLString) },
+		images: {
+			type: new GraphQLList(LOCATION_IMAGE),
+			async resolve(parent, args) {
+				return await locationRepository.GetLocationImages(parent.id);
+			},
+		},
 		publish: { type: GraphQLBoolean },
 		date_created: { type: GraphQLString },
 		date_modified: { type: GraphQLString },
@@ -64,6 +69,17 @@ const LOCATIONS = new GraphQLObjectType({
 				return await locationRepository.GetLocationParkingTypes(parent.id);
 			},
 		},
+	}),
+});
+
+const LOCATION_IMAGE = new GraphQLObjectType({
+	name: "LOCATION_IMAGE",
+	fields: () => ({
+		id: { type: GraphQLInt },
+		location_id: { type: GraphQLInt },
+		url: { type: GraphQLString },
+		date_created: { type: GraphQLString },
+		date_modified: { type: GraphQLString },
 	}),
 });
 
