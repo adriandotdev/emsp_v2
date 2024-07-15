@@ -3,7 +3,11 @@ const CSVService = require("../services/CSVService");
 const CSVRepository = require("../repository/CSVRepository");
 
 const axios = require("axios");
-const { HttpBadRequest } = require("../utils/HttpError");
+const {
+	HttpBadRequest,
+	HttpInternalServerError,
+} = require("../utils/HttpError");
+const logger = require("../config/winston");
 
 const mConnection = {
 	release: jest.fn(),
@@ -12,6 +16,7 @@ const mConnection = {
 	rollback: jest.fn(),
 };
 
+jest.mock("../config/winston.js");
 jest.mock("mysql2", () => {
 	const mConnection = {
 		release: jest.fn(),
@@ -87,7 +92,7 @@ const mockLocationRepository = {
 	GetLocationPhotoByID: jest.fn().mockResolvedValue([{ url: "filename.png" }]),
 };
 
-describe("Location", () => {
+describe("Location Service - Unit Tests", () => {
 	/**
 	 * @type {LocationService}
 	 */
@@ -186,7 +191,36 @@ describe("Location", () => {
 		jest.clearAllMocks();
 	});
 
-	it("Should register EVSEs when Location exists", async () => {
+	it("Should successfully register all locations and evses - RegisterAllLocationsAndEVSEs method", async () => {
+		const result = await locationService.RegisterAllLocationsAndEVSEs("TES", [
+			data,
+		]);
+
+		expect(result).toEqual([{ location_id: 123 }]);
+		expect(mConnection.commit).toHaveBeenCalled();
+		expect(mConnection.commit).toHaveBeenCalledTimes(1);
+		expect(mConnection.rollback).not.toHaveBeenCalled();
+		expect(mConnection.rollback).toHaveBeenCalledTimes(0);
+		expect(mConnection.release).toHaveBeenCalled();
+		expect(mConnection.release).toHaveBeenCalledTimes(1);
+		expect(logger.error).not.toHaveBeenCalled();
+		expect(logger.error).toHaveBeenCalledTimes(0);
+	});
+
+	it("Should throw INTERNAL SERVER ERROR when thrown an error - RegisterAllLocationsAndEVSEs", async () => {
+		locationService.RegisterLocationAndEVSEs = jest
+			.fn()
+			.mockRejectedValue(new Error("Error"));
+
+		try {
+			await locationService.RegisterAllLocationsAndEVSEs("TES", [data]);
+		} catch (err) {
+			expect(err).toBeInstanceOf(HttpInternalServerError);
+			expect(err.message).toBe("CSV_CANNOT_BE_PROCESSED");
+		}
+	});
+
+	it("Should register EVSEs when LOCATION exists - RegisterLocationAndEVSEs", async () => {
 		const connection = await mockCSVRepository.GetConnection();
 
 		const result = await locationService.RegisterLocationAndEVSEs(
@@ -212,7 +246,7 @@ describe("Location", () => {
 		expect(mockCSVRepository.SearchLocationByName).toHaveBeenCalledTimes(1);
 	});
 
-	it("Should register Location, and EVSEs when Location does not exist", async () => {
+	it("Should register LOCATION and EVSEs when LOCATION does not exists - RegisterLocationAndEVSEs", async () => {
 		mockCSVRepository.SearchLocationByName = jest.fn().mockResolvedValue([]);
 
 		const connection = await mockCSVRepository.GetConnection();
@@ -238,7 +272,326 @@ describe("Location", () => {
 		expect(mockCSVRepository.SearchLocationByName).toHaveBeenCalledTimes(1);
 	});
 
-	it("Should register an EVSE", async () => {
+	it("Should throw BAD REQUEST when address_components is empty - RegisterLocationAndEVSEs", async () => {
+		mockCSVRepository.SearchLocationByName = jest.fn().mockResolvedValue([]);
+
+		const connection = await mockCSVRepository.GetConnection();
+
+		axios.get.mockResolvedValueOnce({ data: { results: [] } });
+
+		try {
+			await locationService.RegisterLocationAndEVSEs(data, connection);
+		} catch (err) {
+			expect(err).toBeInstanceOf(HttpBadRequest);
+			expect(err.message).toBe("LOCATION_NOT_FOUND");
+		}
+	});
+
+	it("Should throw BAD REQUEST when there's invalid LOCATION facilities - RegisterLocationAndEVSEs", async () => {
+		const connection = await mockCSVRepository.GetConnection();
+
+		data = {
+			name: "Yan-Yan's Store",
+			address: "BLK 137 LOT 3, Phase 2, Cabuyao, Laguna",
+			lat: "14.12345",
+			lng: "121.12345",
+			evses: [
+				{
+					uid: "123456689",
+					status: "AVAILABLE",
+					meter_type: "AC",
+					kwh: 7,
+					connectors: [
+						{
+							standard: "CHADEMO",
+							format: "SOCKET",
+							power_type: "AC",
+							max_voltage: 230,
+							max_amperage: 16,
+							max_electric_power: 120,
+						},
+					],
+					capabilities: ["CREDIT_DEBIT_PAYABLE", "QR_READER"],
+					payment_types: ["GCASH", "MAYA"],
+				},
+				{
+					uid: "123",
+					status: "AVAILABLE",
+					meter_type: "AC",
+					kwh: 7,
+					connectors: [
+						{
+							standard: "TYPE_2",
+							format: "SOCKET",
+							power_type: "AC",
+							max_voltage: 230,
+							max_amperage: 16,
+							max_electric_power: 120,
+						},
+					],
+					capabilities: ["CREDIT_DEBIT_PAYABLE", "QR_READER"],
+					payment_types: ["GCASH", "MAYA"],
+				},
+			],
+			facilities: ["CINEMA", "CAFEs"],
+			parking_types: ["INDOOR"],
+			parking_restrictions: ["CUSTOMERS", "DISABLED"],
+		};
+
+		try {
+			await locationService.RegisterLocationAndEVSEs(data, connection);
+		} catch (err) {
+			expect(err).toBeInstanceOf(HttpBadRequest);
+			expect(err.message).toBe("INVALID_FACILITIES");
+		}
+	});
+
+	it("Should throw BAD REQUEST when there's invalid LOCATION parking types - RegisterLocationAndEVSEs", async () => {
+		const connection = await mockCSVRepository.GetConnection();
+
+		data = {
+			name: "Yan-Yan's Store",
+			address: "BLK 137 LOT 3, Phase 2, Cabuyao, Laguna",
+			lat: "14.12345",
+			lng: "121.12345",
+			evses: [
+				{
+					uid: "123456689",
+					status: "AVAILABLE",
+					meter_type: "AC",
+					kwh: 7,
+					connectors: [
+						{
+							standard: "CHADEMO",
+							format: "SOCKET",
+							power_type: "AC",
+							max_voltage: 230,
+							max_amperage: 16,
+							max_electric_power: 120,
+						},
+					],
+					capabilities: ["CREDIT_DEBIT_PAYABLE", "QR_READER"],
+					payment_types: ["GCASH", "MAYA"],
+				},
+				{
+					uid: "123",
+					status: "AVAILABLE",
+					meter_type: "AC",
+					kwh: 7,
+					connectors: [
+						{
+							standard: "TYPE_2",
+							format: "SOCKET",
+							power_type: "AC",
+							max_voltage: 230,
+							max_amperage: 16,
+							max_electric_power: 120,
+						},
+					],
+					capabilities: ["CREDIT_DEBIT_PAYABLE", "QR_READER"],
+					payment_types: ["GCASH", "MAYA"],
+				},
+			],
+			facilities: ["CINEMA", "CAFE"],
+			parking_types: ["INDOORS"],
+			parking_restrictions: ["CUSTOMERS", "DISABLED"],
+		};
+
+		try {
+			await locationService.RegisterLocationAndEVSEs(data, connection);
+		} catch (err) {
+			expect(err).toBeInstanceOf(HttpBadRequest);
+			expect(err.message).toBe("INVALID_PARKING_TYPES");
+		}
+	});
+
+	it("Should throw BAD REQUEST when there's invalid LOCATION parking restrictions - RegisterLocationAndEVSEs", async () => {
+		const connection = await mockCSVRepository.GetConnection();
+
+		data = {
+			name: "Yan-Yan's Store",
+			address: "BLK 137 LOT 3, Phase 2, Cabuyao, Laguna",
+			lat: "14.12345",
+			lng: "121.12345",
+			evses: [
+				{
+					uid: "123456689",
+					status: "AVAILABLE",
+					meter_type: "AC",
+					kwh: 7,
+					connectors: [
+						{
+							standard: "CHADEMO",
+							format: "SOCKET",
+							power_type: "AC",
+							max_voltage: 230,
+							max_amperage: 16,
+							max_electric_power: 120,
+						},
+					],
+					capabilities: ["CREDIT_DEBIT_PAYABLE", "QR_READER"],
+					payment_types: ["GCASH", "MAYA"],
+				},
+				{
+					uid: "123",
+					status: "AVAILABLE",
+					meter_type: "AC",
+					kwh: 7,
+					connectors: [
+						{
+							standard: "TYPE_2",
+							format: "SOCKET",
+							power_type: "AC",
+							max_voltage: 230,
+							max_amperage: 16,
+							max_electric_power: 120,
+						},
+					],
+					capabilities: ["CREDIT_DEBIT_PAYABLE", "QR_READER"],
+					payment_types: ["GCASH", "MAYA"],
+				},
+			],
+			facilities: ["CINEMA", "CAFE"],
+			parking_types: ["INDOOR"],
+			parking_restrictions: ["CUSTOMERSS", "DISABLED"],
+		};
+
+		try {
+			await locationService.RegisterLocationAndEVSEs(data, connection);
+		} catch (err) {
+			expect(err).toBeInstanceOf(HttpBadRequest);
+			expect(err.message).toBe("INVALID_PARKING_RESTRICTIONS");
+		}
+	});
+
+	it("Should throw BAD REQUEST when there's DUPLICATE evse uid - RegisterLocationAndEVSEs", async () => {
+		const connection = await mockCSVRepository.GetConnection();
+
+		mockLocationRepository.RegisterEVSE.mockResolvedValueOnce([
+			[{ STATUS: "DUPLICATE_EVSE_UID", status_type: "bad_request" }],
+		]);
+
+		data = {
+			name: "Yan-Yan's Store",
+			address: "BLK 137 LOT 3, Phase 2, Cabuyao, Laguna",
+			lat: "14.12345",
+			lng: "121.12345",
+			evses: [
+				{
+					uid: "123456689",
+					status: "AVAILABLE",
+					meter_type: "AC",
+					kwh: 7,
+					connectors: [
+						{
+							standard: "CHADEMO",
+							format: "SOCKET",
+							power_type: "AC",
+							max_voltage: 230,
+							max_amperage: 16,
+							max_electric_power: 120,
+						},
+					],
+					capabilities: ["CREDIT_DEBIT_PAYABLE", "QR_READER"],
+					payment_types: ["GCASH", "MAYA"],
+				},
+			],
+			facilities: ["CINEMA", "CAFE"],
+			parking_types: ["INDOOR"],
+			parking_restrictions: ["CUSTOMERS", "DISABLED"],
+		};
+
+		try {
+			await locationService.RegisterLocationAndEVSEs(data, connection);
+		} catch (err) {
+			expect(err).toBeInstanceOf(HttpBadRequest);
+			expect(err.message).toBe("DUPLICATE_EVSE_UID:123456689");
+		}
+	});
+
+	it("Should throw BAD REQUEST when there's invalid EVSE capabilities - RegisterLocationAndEVSEs", async () => {
+		const connection = await mockCSVRepository.GetConnection();
+
+		data = {
+			name: "Yan-Yan's Store",
+			address: "BLK 137 LOT 3, Phase 2, Cabuyao, Laguna",
+			lat: "14.12345",
+			lng: "121.12345",
+			evses: [
+				{
+					uid: "123456689",
+					status: "AVAILABLE",
+					meter_type: "AC",
+					kwh: 7,
+					connectors: [
+						{
+							standard: "CHADEMO",
+							format: "SOCKET",
+							power_type: "AC",
+							max_voltage: 230,
+							max_amperage: 16,
+							max_electric_power: 120,
+						},
+					],
+					capabilities: ["CREDIT_DEBIT_PAYABLES", "QR_READER"],
+					payment_types: ["GCASH", "MAYA"],
+				},
+			],
+			facilities: ["CINEMA", "CAFE"],
+			parking_types: ["INDOOR"],
+			parking_restrictions: ["CUSTOMERS", "DISABLED"],
+		};
+
+		try {
+			await locationService.RegisterLocationAndEVSEs(data, connection);
+		} catch (err) {
+			expect(err).toBeInstanceOf(HttpBadRequest);
+			expect(err.message).toBe("INVALID_CAPABILITIES");
+		}
+	});
+
+	it("Should throw BAD REQUEST when there's invalid EVSE payment types - RegisterLocationAndEVSEs", async () => {
+		const connection = await mockCSVRepository.GetConnection();
+
+		data = {
+			name: "Yan-Yan's Store",
+			address: "BLK 137 LOT 3, Phase 2, Cabuyao, Laguna",
+			lat: "14.12345",
+			lng: "121.12345",
+			evses: [
+				{
+					uid: "123456689",
+					status: "AVAILABLE",
+					meter_type: "AC",
+					kwh: 7,
+					connectors: [
+						{
+							standard: "CHADEMO",
+							format: "SOCKET",
+							power_type: "AC",
+							max_voltage: 230,
+							max_amperage: 16,
+							max_electric_power: 120,
+						},
+					],
+					capabilities: ["CREDIT_DEBIT_PAYABLE", "QR_READER"],
+					payment_types: ["GCASH", "MAYAS"],
+				},
+			],
+			facilities: ["CINEMA", "CAFE"],
+			parking_types: ["INDOOR"],
+			parking_restrictions: ["CUSTOMERS", "DISABLED"],
+		};
+
+		try {
+			await locationService.RegisterLocationAndEVSEs(data, connection);
+		} catch (err) {
+			expect(err).toBeInstanceOf(HttpBadRequest);
+			expect(err.message).toBe("INVALID_PAYMENT_TYPES");
+		}
+	});
+
+	it("Should successfully register an EVSE - RegisterEVSE", async () => {
 		mockLocationRepository.RegisterEVSE = jest
 			.fn()
 			.mockResolvedValue([[{ STATUS: "SUCCESS" }]]);
@@ -274,7 +627,7 @@ describe("Location", () => {
 		expect(mockLocationRepository.GetPaymentTypes).toHaveBeenCalledTimes(1);
 	});
 
-	it("should return INVALID CAPABILITIES when registering EVSE and it has invalid capabilities", async () => {
+	it("Should throw BAD REQUEST when there's invalid EVSE capabilities - RegisterEVSE", async () => {
 		try {
 			await locationService.RegisterEVSE({
 				uid: "123456689",
@@ -303,7 +656,7 @@ describe("Location", () => {
 		}
 	});
 
-	it("should return INVALID PAYMENT TYPES when registering EVSE and it has invalid payment types", async () => {
+	it("Should throw BAD REQUEST when there's invalid EVSE payment types - RegisterEVSE", async () => {
 		try {
 			await locationService.RegisterEVSE({
 				uid: "123456689",
@@ -332,7 +685,7 @@ describe("Location", () => {
 		}
 	});
 
-	it("should return BAD REQUEST when status is not SUCCESS - LOCATION_ID_DOES_NOT_EXISTS", async () => {
+	it("Should throw BAD REQUEST when LOCATION_ID_DOES_NOT_EXISTS status received - RegisterEVSE", async () => {
 		mockLocationRepository.RegisterEVSE = jest
 			.fn()
 			.mockResolvedValue([
@@ -356,7 +709,7 @@ describe("Location", () => {
 		}
 	});
 
-	it("should return BAD REQUEST when status is not SUCCESS - DUPLICATE_EVSE_UID", async () => {
+	it("Should throw BAD REQUEST when DUPLICATE_EVSE_UID status received - RegisterEVSE", async () => {
 		mockLocationRepository.RegisterEVSE = jest
 			.fn()
 			.mockResolvedValue([
@@ -378,7 +731,7 @@ describe("Location", () => {
 		}
 	});
 
-	it("should return SUCCESS when UploadLocationPhotos is successful", async () => {
+	it("Should successfully upload LOCATION photos - UploadLocationPhotos", async () => {
 		const result = await locationService.UploadLocationPhotos(
 			[{ filename: "filename1.png" }],
 			1
@@ -387,7 +740,7 @@ describe("Location", () => {
 		expect(result).toBe("SUCCESS");
 	});
 
-	it("should return BAD REQUEST when photos does not have any element", async () => {
+	it("Should throw BAD REQUEST when photos does not have any element - UploadLocationPhotos", async () => {
 		try {
 			await locationService.UploadLocationPhotos([], 1);
 		} catch (err) {
@@ -399,7 +752,7 @@ describe("Location", () => {
 		}
 	});
 
-	it("should return SUCCESS when UpdateLocationPhotoByID is succcessfull", async () => {
+	it("Should successfully update location photo by id - UpdateLocationPhotoByID", async () => {
 		const result = await locationService.UpdateLocationPhotoByID(
 			1,
 			"new_photo.png"
@@ -411,7 +764,7 @@ describe("Location", () => {
 		).toHaveBeenCalledTimes(1);
 	});
 
-	it("should return BAD REQUEST when LOCATION_PHOTO_NOT_EXISTS", async () => {
+	it("Should throw BAD REQUEST when LOCATION_PHOTO_NOT_EXISTS status received - UpdateLocationPhotoByID", async () => {
 		mockLocationRepository.GetLocationPhotoByID = jest
 			.fn()
 			.mockResolvedValue([]);
