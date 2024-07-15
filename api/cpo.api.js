@@ -316,6 +316,44 @@ module.exports = (app, upload) => {
 		}
 	);
 
+	app.get(
+		"/ocpi/cpo/2.2/locations/pending",
+		[tokenMiddleware.AccessTokenVerifier()],
+
+		/**
+		 * @param {import('express').Request} req
+		 * @param {import('express').Response} res
+		 */
+		async (req, res, next) => {
+			try {
+				logger.info({
+					GET_PENDING_LOCATIONS_REQUEST: {
+						data: {
+							cpo_id: req.cpo_owner_id,
+						},
+					},
+				});
+
+				const result = await service.GetPendingLocationsAndEVSEs(
+					req.cpo_owner_id
+				);
+
+				logger.info({
+					GET_PENDING_LOCATIONS_RESPONSE: {
+						message: "SUCCESS",
+					},
+				});
+
+				return res
+					.status(200)
+					.json({ status: 200, data: result, message: "Success" });
+			} catch (err) {
+				req.error_name = "GET_PENDING_LOCATIONS_ERROR";
+				next(err);
+			}
+		}
+	);
+
 	app.use((err, req, res, next) => {
 		logger.error({
 			API_REQUEST_ERROR: {

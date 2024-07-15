@@ -15,6 +15,7 @@
 		- [GET List of Cities by Province - `/ocpi/cpo/2.2/filters/cities/:province_name`](#get-list-of-cities-by-province---ocpicpo22filterscitiesprovince_name)
 		- [GET Charging Point Operator (CPO) Details - `/ocpi/cpo/2.2/details`](#get-charging-point-operator-cpo-details---ocpicpo22details)
 		- [PATCH Update CPO Logo by CPO Owner ID - `/ocpi/cpo/2.2/cpo/logo/upload`](#patch-update-cpo-logo-by-cpo-owner-id---ocpicpo22cpologoupload)
+		- [GET Pending Locations and EVSEs - `/ocpi/cpo/2.2/locations/pending`](#get-pending-locations-and-evses---ocpicpo22locationspending)
 	- [GraphQL APIs](#graphql-apis)
 		- [Query EVSEs](#query-evses)
 		- [Query Locations](#query-locations)
@@ -383,6 +384,37 @@ Valid File: .csv
 ```
 
 [Back to Top](#emsp-version-20-apis)
+
+---
+
+### GET Pending Locations and EVSEs - `/ocpi/cpo/2.2/locations/pending`
+
+**Authorization: Bearer TOKEN**
+
+**Response**
+
+```json
+{
+	"status": 200,
+	"data": [
+		{
+			"pending_locations": 1,
+			"pending_evses": 2
+		}
+	],
+	"message": "Success"
+}
+```
+
+**NOTE: When there are no pending locations and evses. The response would be:**
+
+```json
+{
+	"status": 200,
+	"data": "NO_PENDING_LOCATIONS_AND_EVSES",
+	"message": "Success"
+}
+```
 
 ---
 

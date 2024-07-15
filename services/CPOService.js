@@ -232,6 +232,15 @@ module.exports = class CPOService {
 		}
 	}
 
+	async GetPendingLocationsAndEVSEs(cpoID) {
+		const result = await this.#repository.GetPendingLocationsAndEVSEs(cpoID);
+
+		if (result[0].pending_locations === 0 && result[0].pending_evses === 0)
+			return "NO_PENDING_LOCATIONS_AND_EVSES";
+
+		return result;
+	}
+
 	async GeneratePartyID(companyName) {
 		/**
 		 * @Steps

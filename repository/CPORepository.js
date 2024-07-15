@@ -359,4 +359,25 @@ module.exports = class CPORepository {
 			});
 		});
 	}
+
+	GetPendingLocationsAndEVSEs(cpoID) {
+		const QUERY = `
+
+			SELECT
+				COUNT(DISTINCT location_name) AS pending_locations,
+				COUNT(DISTINCT evse_sn) AS pending_evses
+			FROM
+				csv_temporary_table
+			WHERE 
+				cpo_owner_id =?
+		`;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, [cpoID], (err, result) => {
+				if (err) reject(err);
+
+				resolve(result);
+			});
+		});
+	}
 };
