@@ -74,7 +74,9 @@ module.exports = class CSVRepository {
                 location_facilities,
                 location_parking_types,
                 evse_capabilities,
-				evse_payment_types)
+				evse_payment_types,
+				evse_floor_level,
+				evse_directions)
 			VALUES ?
 		`;
 

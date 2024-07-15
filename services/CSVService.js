@@ -103,8 +103,12 @@ module.exports = class CSVService {
 					const findEvseByUid = (evses, uid) =>
 						evses.find((evse) => evse.uid === uid);
 
+					const filteredData = data.filter((row) =>
+						row.some((field) => field.trim() !== "")
+					);
+
 					// Process the data
-					data.forEach((entry) => {
+					filteredData.forEach((entry) => {
 						const [
 							location,
 							address,
@@ -428,6 +432,7 @@ module.exports = class CSVService {
 				.on("end", async () => {
 					fs.unlinkSync(filePath); // Delete the file after getting the data
 
+					// Remove white spaces
 					const filteredData = data.filter((row) =>
 						row.some((field) => field.trim() !== "")
 					);
@@ -436,8 +441,71 @@ module.exports = class CSVService {
 						return [cpoID, ...entry];
 					});
 
-					console.log(csvLocations);
-					await this.#csvRepository.InsertTemporaryData(csvLocations);
+					const processedData = csvLocations.map((row) => {
+						const [
+							cpo_owner_id,
+							location_name,
+							address,
+							address_lat,
+							address_lng,
+							evse_sn,
+							kwh,
+							connectors,
+							connector_format,
+							power_type,
+							max_voltage,
+							max_amperage,
+							max_electric_power,
+							location_facilities,
+							location_parking_types,
+							evse_capabilities,
+							evse_payment_types,
+							evse_floor_level,
+							evse_directions,
+						] = row;
+
+						// Set evse_floor_level to null if it is null or zero
+						const processedEvseFloorLevel =
+							evse_floor_level === null ||
+							evse_floor_level === 0 ||
+							evse_floor_level === ""
+								? null
+								: evse_floor_level;
+
+						const processedEvseDirections =
+							evse_directions === null || evse_directions === ""
+								? null
+								: evse_directions;
+
+						return [
+							cpo_owner_id,
+							location_name,
+							address,
+							address_lat,
+							address_lng,
+							evse_sn,
+							kwh,
+							connectors,
+							connector_format,
+							power_type,
+							max_voltage,
+							max_amperage,
+							max_electric_power,
+							location_facilities,
+							location_parking_types,
+							evse_capabilities,
+							evse_payment_types,
+							processedEvseFloorLevel,
+							processedEvseDirections,
+						];
+					});
+
+					try {
+						await this.#csvRepository.InsertTemporaryData(processedData);
+					} catch (err) {
+						reject(err);
+					}
+
 					resolve("SUCCESS");
 				})
 				.on("error", (err) => {
@@ -465,7 +533,11 @@ module.exports = class CSVService {
 					const findEvseByUid = (evses, uid) =>
 						evses.find((evse) => evse.uid === uid);
 
-					data.forEach((entry) => {
+					const filteredData = data.filter((row) =>
+						row.some((field) => field.trim() !== "")
+					);
+
+					filteredData.forEach((entry) => {
 						const [
 							location,
 							address,
@@ -483,8 +555,11 @@ module.exports = class CSVService {
 							parking_types,
 							capabilities,
 							payment_types,
+							floor_level,
+							directions,
 						] = entry;
 
+						console.log(entry);
 						// Find or create the location object
 						let locationObj = result.find(
 							(loc) => loc.name === location && loc.address === address
@@ -525,6 +600,8 @@ module.exports = class CSVService {
 								payment_types: payment_types
 									? JSON.parse(payment_types.slice(1, -1))
 									: [],
+								floor_level: floor_level ? parseInt(floor_level) : 0,
+								directions: directions ? directions : "",
 							};
 							locationObj.evses.push(evseObj);
 						}
@@ -723,6 +800,8 @@ module.exports = class CSVService {
 							serial_number: evse.uid,
 							meter_type: evse.meter_type,
 							location_id: locationResult.insertId,
+							floor_level: evse.floor_level,
+							directions: evse.directions,
 						},
 						connection
 					);
