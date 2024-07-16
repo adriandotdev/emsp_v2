@@ -72,7 +72,7 @@ const mockCPORepository = {
 	GetCPODetails: jest.fn(),
 };
 
-describe("Charging Operator Service Test", () => {
+describe("CPO Service - Unit Tests", () => {
 	/**
 	 * @type {CPOService}
 	 */
@@ -170,7 +170,9 @@ describe("Charging Operator Service Test", () => {
 	});
 
 	it("should successfully REGISTER CHARGING POINT OPERATOR", async () => {
-		CPOService.prototype.GeneratePartyID = jest.fn().mockResolvedValue("TES");
+		CPOService.prototype.GeneratePartyID = jest
+			.fn()
+			.mockResolvedValueOnce("TES");
 
 		const result = await service.RegisterCPO({
 			cpo_owner_name: "Testing",
@@ -341,15 +343,5 @@ describe("Charging Operator Service Test", () => {
 			expect(err.message).toBe("CPO_NOT_FOUND");
 			expect(mockCPORepository.UpdateCPOLogoByID).toHaveBeenCalledTimes(0);
 		}
-	});
-
-	it("should successfully Generate Party ID", async () => {
-		service.GeneratePartyID.mockResolvedValue("EXA");
-		mockCPORepository.GetCPODetails.mockResolvedValue([]);
-
-		const companyName = "Example Company";
-		const result = await service.GeneratePartyID(companyName);
-
-		expect(result).toBe("EXA");
 	});
 });

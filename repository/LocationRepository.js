@@ -762,11 +762,13 @@ module.exports = class LocationRepository {
 	GetLocationPhotoByID(photoID) {
 		const QUERY = `
             SELECT
-                url
+                url,
+				cpo_locations.cpo_owner_id AS cpo_owner_id
             FROM
                 cpo_location_images
+			INNER JOIN cpo_locations ON cpo_locations.id = cpo_location_images.location_id
             WHERE
-                id =?
+                cpo_location_images.id =?
         `;
 
 		return new Promise((resolve, reject) => {
@@ -796,6 +798,25 @@ module.exports = class LocationRepository {
 			mysql.query(QUERY, [locationID], (err, result) => {
 				if (err) reject(err);
 
+				resolve(result);
+			});
+		});
+	}
+
+	GetLocationByID(locationID) {
+		const QUERY = `
+		
+			SELECT
+				*
+			FROM
+				cpo_locations
+			WHERE
+				id =?
+		`;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, [locationID], (err, result) => {
+				if (err) reject(err);
 				resolve(result);
 			});
 		});

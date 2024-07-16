@@ -90,6 +90,7 @@ const mockLocationRepository = {
 		jest.fn().mockResolvedValue("SUCCESS")
 	),
 	GetLocationPhotoByID: jest.fn().mockResolvedValue([{ url: "filename.png" }]),
+	GetLocationByID: jest.fn(),
 };
 
 describe("Location Service - Unit Tests", () => {
@@ -732,12 +733,62 @@ describe("Location Service - Unit Tests", () => {
 	});
 
 	it("Should successfully upload LOCATION photos - UploadLocationPhotos", async () => {
+		mockLocationRepository.GetLocationByID.mockResolvedValueOnce([
+			{ id: 1, cpo_owner_id: 93 },
+		]);
+
 		const result = await locationService.UploadLocationPhotos(
 			[{ filename: "filename1.png" }],
+			93,
 			1
 		);
 
 		expect(result).toBe("SUCCESS");
+		expect(mockLocationRepository.UploadLocationPhotos).toHaveBeenCalledTimes(
+			1
+		);
+	});
+
+	it("Should throw BAD REQUEST when location is not found - UploadLocationPhotos", async () => {
+		mockLocationRepository.GetLocationByID.mockResolvedValueOnce([]);
+
+		try {
+			await locationService.UploadLocationPhotos(
+				[{ filename: "filename1.png" }],
+				93,
+				1
+			);
+		} catch (err) {
+			expect(err).toBeInstanceOf(HttpBadRequest);
+			expect(err.message).toBe("LOCATION_NOT_FOUND");
+			expect(
+				mockLocationRepository.UploadLocationPhotos
+			).not.toHaveBeenCalled();
+			expect(mockLocationRepository.GetLocationByID).toHaveBeenCalledTimes(1);
+		}
+	});
+
+	it("Should throw an error when LOCATION is not ASSOCIATED with CPO", async () => {
+		mockLocationRepository.GetLocationByID.mockResolvedValueOnce([
+			{ id: 1, cpo_owner_id: 94 },
+		]);
+
+		try {
+			await locationService.UploadLocationPhotos(
+				[{ filename: "filename1.png" }],
+				93,
+				1
+			);
+		} catch (err) {
+			expect(err).toBeInstanceOf(HttpBadRequest);
+			expect(err.message).toBe(
+				`LOCATION_IS_NOT_ASSOCIATED_WITH_CPO_OWNER_ID: ${93}`
+			);
+			expect(
+				mockLocationRepository.UploadLocationPhotos
+			).not.toHaveBeenCalled();
+			expect(mockLocationRepository.GetLocationByID).toHaveBeenCalledTimes(1);
+		}
 	});
 
 	it("Should throw BAD REQUEST when photos does not have any element - UploadLocationPhotos", async () => {
@@ -753,8 +804,13 @@ describe("Location Service - Unit Tests", () => {
 	});
 
 	it("Should successfully update location photo by id - UpdateLocationPhotoByID", async () => {
+		mockLocationRepository.GetLocationPhotoByID.mockResolvedValueOnce([
+			{ url: "location.png", cpo_owner_id: 93 },
+		]);
+
 		const result = await locationService.UpdateLocationPhotoByID(
 			1,
+			93,
 			"new_photo.png"
 		);
 
@@ -770,10 +826,31 @@ describe("Location Service - Unit Tests", () => {
 			.mockResolvedValue([]);
 
 		try {
-			await locationService.UpdateLocationPhotoByID(1, "new_photo.png");
+			await locationService.UpdateLocationPhotoByID(1, 93, "new_photo.png");
 		} catch (err) {
 			expect(err).toBeInstanceOf(HttpBadRequest);
 			expect(err.message).toBe("LOCATION_PHOTO_NOT_EXISTS");
+			expect(mockLocationRepository.GetLocationPhotoByID).toHaveBeenCalledTimes(
+				1
+			);
+			expect(
+				mockLocationRepository.UpdateLocationPhotoByID
+			).toHaveBeenCalledTimes(0);
+		}
+	});
+
+	it("Should throw BAD REQUEST when LOCATION is not associated with CPO", async () => {
+		mockLocationRepository.GetLocationPhotoByID.mockResolvedValueOnce([
+			{ url: "location.png", cpo_owner_id: 94 },
+		]);
+
+		try {
+			await locationService.UpdateLocationPhotoByID(1, 93, "new_photo.png");
+		} catch (err) {
+			expect(err).toBeInstanceOf(HttpBadRequest);
+			expect(err.message).toBe(
+				`LOCATION_PHOTO_IS_NOT_ASSOCIATED_WITH_CPO_OWNER_ID: ${93}`
+			);
 			expect(mockLocationRepository.GetLocationPhotoByID).toHaveBeenCalledTimes(
 				1
 			);

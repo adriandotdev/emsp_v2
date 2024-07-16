@@ -404,10 +404,22 @@ module.exports = class LocationService {
 	 * @param {Array} photos
 	 * @param {Number} locationID
 	 */
-	async UploadLocationPhotos(photos, locationID) {
+	async UploadLocationPhotos(photos, cpoOwnerID, locationID) {
 		try {
 			if (!photos.length)
 				throw new HttpBadRequest("Please provide at least one photo", []);
+
+			const location = await this.#locationRepository.GetLocationByID(
+				locationID
+			);
+
+			if (!location.length) throw new HttpBadRequest("LOCATION_NOT_FOUND", []);
+
+			if (location.length && location[0].cpo_owner_id !== cpoOwnerID)
+				throw new HttpBadRequest(
+					`LOCATION_IS_NOT_ASSOCIATED_WITH_CPO_OWNER_ID: ${cpoOwnerID}`,
+					[]
+				);
 
 			const photosToUpload = photos.map((photo) => [
 				parseInt(locationID),
@@ -424,7 +436,7 @@ module.exports = class LocationService {
 		}
 	}
 
-	async UpdateLocationPhotoByID(photoID, photo) {
+	async UpdateLocationPhotoByID(photoID, cpoOwnerID, photo) {
 		try {
 			const photoToUpdate = await this.#locationRepository.GetLocationPhotoByID(
 				photoID
@@ -432,6 +444,12 @@ module.exports = class LocationService {
 
 			if (!photoToUpdate.length)
 				throw new HttpBadRequest("LOCATION_PHOTO_NOT_EXISTS", []);
+
+			if (photoToUpdate.length && photoToUpdate[0].cpo_owner_id !== cpoOwnerID)
+				throw new HttpBadRequest(
+					`LOCATION_PHOTO_IS_NOT_ASSOCIATED_WITH_CPO_OWNER_ID: ${cpoOwnerID}`,
+					[]
+				);
 
 			const filePath = path.join("public", "images", photoToUpdate[0].url);
 

@@ -274,13 +274,18 @@ module.exports = (app, upload) => {
 				logger.info({
 					UPLOAD_LOCATION_PHOTOS_REQUEST: {
 						data: {
+							cpo_owner_id: req.cpo_owner_id,
 							location_id: req.body.location_id,
 							files: req.files.map((file) => file.filename),
 						},
 					},
 				});
 
-				await service.UploadLocationPhotos(req.files, req.body.location_id);
+				await service.UploadLocationPhotos(
+					req.files,
+					req.cpo_owner_id,
+					req.body.location_id
+				);
 
 				logger.info({
 					UPLOAD_LOCATION_PHOTOS_RESPONSE: {
@@ -312,6 +317,7 @@ module.exports = (app, upload) => {
 				logger.info({
 					UPLOAD_PHOTO_BY_ID_REQUEST: {
 						data: {
+							cpo_owner_id: req.cpo_owner_id,
 							photo_id: req.params.photo_id,
 							file_name: req.file.filename,
 						},
@@ -320,6 +326,7 @@ module.exports = (app, upload) => {
 
 				await service.UpdateLocationPhotoByID(
 					req.params.photo_id,
+					req.cpo_owner_id,
 					req.file.filename
 				);
 
