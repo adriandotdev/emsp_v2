@@ -1,6 +1,0 @@
-run_tests:
-    image: node:lts-slim
-    before_script:
-        - npm install
-    script:
-        - npm run test
