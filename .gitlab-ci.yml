@@ -14,5 +14,5 @@ build_image:
   before_script:
     - docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD
   script:
-    - docker build -t emsp_v2 .
-    - docker push emsp_v2
+    - docker build -t adriandotdev/emsp_v2 .
+    - docker push adriandotdev/emsp_v2
