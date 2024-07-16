@@ -1,13 +1,20 @@
+#Pull node latest version, current version 21 as of 11/30/2023
 FROM node:21.6.2-alpine3.18
 
-RUN mkdir -p /home/app
+#Install PM2
+RUN npm install -g pm2@latest
 
-WORKDIR /home/app
+#Set work directory
+WORKDIR /var/www/emsp
 
-COPY . /home/app
+#Copy all content of the current dir to WORKDIR
+COPY . .
 
-RUN npm install
+#Install Apps
+RUN npm i 
 
-EXPOSE 4001
+#Image port
+EXPOSE 4021
 
-CMD ["npm", "start"]
+#Script to start apps (specific setup of pm2)
+CMD [ "pm2-runtime", "start" , "./ecosystem.config.js" ]
