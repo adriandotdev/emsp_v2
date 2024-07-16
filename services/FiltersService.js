@@ -15,9 +15,28 @@ module.exports = class FiltersService {
 		const provinces = await this.#repository.GetProvinces();
 		const cities = await this.#repository.GetCities();
 
+		const modifiedFacilities = facilities.filter((facility) => {
+			if (
+				["ATM", "CAFE", "RESTAURANTS", "RESTROOM", "SHOPS"].includes(
+					facility.code
+				)
+			)
+				return facility;
+		});
+
+		const modifiedAmenities = facilities.filter((facility) => {
+			if (
+				!["ATM", "CAFE", "RESTAURANTS", "RESTROOM", "SHOPS"].includes(
+					facility.code
+				)
+			)
+				return facility;
+		});
+
 		return {
 			connector_types,
-			facilities,
+			facilities: modifiedFacilities,
+			amenities: modifiedAmenities,
 			capabilities,
 			payment_types,
 			parking_types,
