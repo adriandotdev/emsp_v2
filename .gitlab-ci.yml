@@ -28,7 +28,6 @@ deploy:
   stage: deploy
   before_script:
     - chmod 400 $SSH_KEY
-    - ssh-keyscan -H 192.46.227.227 >> ~/.ssh/known_hosts
   script:
     - ssh -i $SSH_KEY sysnet@192.46.227.227 "
       sudo docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD &&
