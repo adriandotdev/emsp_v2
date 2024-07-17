@@ -69,7 +69,7 @@ const mockCPORepository = {
 	]),
 	GetCPOLogoByCPOID: jest.fn().mockResolvedValue([{ logo: "logo.svg" }]),
 	UpdateCPOLogoByID: jest.fn(),
-	GetCPODetails: jest.fn(),
+	GetCPODetails: jest.fn().mockResolvedValue([{ party_id: "PAR" }]),
 };
 
 describe("CPO Service - Unit Tests", () => {
