@@ -28,8 +28,9 @@ deploy:
   stage: deploy
   before_script:
     - chmod 400 $SSH_KEY
+    - ssh-keyscan -H 192.46.227.227 >> ~/.ssh/known_hosts
   script:
-    - ssh -o StrictHostKeyChecking=no -i $SSH_KEY sysnet@192.46.227.227 "
+    - ssh -i $SSH_KEY sysnet@192.46.227.227 "
       sudo docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD &&
       sudo docker ps -aq | xargs sudo docker stop | xargs sudo docker rm &&
       sudo docker run -d -p 4021:4021 adriandotdev/emsp_v2:latest"
