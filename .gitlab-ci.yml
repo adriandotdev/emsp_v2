@@ -29,7 +29,7 @@ deploy:
   before_script:
     - chmod 400 $SSH_KEY
   script:
-    - ssh -o StrictHostKeyChecking=no -i $SSH_KEY sysnet@192.46.227.227 "
+    - ssh -o StrictHostKeyChecking=no -i $SSH_KEY $HOST "
       docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD &&
       docker stop emsp_v2 || true &&
       docker rm emsp_v2 || true &&
