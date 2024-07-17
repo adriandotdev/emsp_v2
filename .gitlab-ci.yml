@@ -32,5 +32,6 @@ deploy:
     - ssh -o StrictHostKeyChecking=no -i $SSH_KEY sysnet@192.46.227.227 "
       docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD &&
       docker images | grep 'adriandotdev/emsp_v2' | awk '{print $3}' | xargs docker rmi -f &&
+      docker pull adriandotdev/emsp_v2:latest &&
       docker run -d -p 4021:4021 adriandotdev/emsp_v2:latest"
 
