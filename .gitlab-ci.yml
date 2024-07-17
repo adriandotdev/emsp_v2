@@ -31,10 +31,10 @@ deploy:
   script:
     - ssh -o StrictHostKeyChecking=no -i $SSH_KEY sysnet@192.46.227.227 "
       docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD &&
-      docker stop adriandotdev/emsp_v2 || true &&
-      docker rm adriandotdev/emsp_v2 || true &&
+      docker stop emsp_v2 || true &&
+      docker rm emsp_v2 || true &&
       docker images | grep 'adriandotdev/emsp_v2' | awk '{print $3}' | xargs docker rmi -f || true &&
       docker pull adriandotdev/emsp_v2:latest &&
-      docker run -d -p 4021:4021 --name adriandotdev/emsp_v2 adriandotdev/emsp_v2:latest"
+      docker run -d -p 4021:4021 --name emsp_v2 adriandotdev/emsp_v2:latest"
 
 
