@@ -33,7 +33,7 @@ deploy:
       docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD &&
       docker stop emsp_v2 || true &&
       docker rm emsp_v2 || true &&
-      docker images | grep 'adriandotdev/emsp_v2' | awk '{print $3}' | xargs docker rmi -f || true &&
+      docker images | grep 'sysnet2024/emsp_v2' | awk '{print $3}' | xargs docker rmi -f || true &&
       docker pull sysnet2024/emsp_v2:latest &&
       docker run -d \
       -p 4023:4023 \
