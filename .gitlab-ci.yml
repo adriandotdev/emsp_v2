@@ -35,4 +35,9 @@ deploy:
       docker rm emsp_v2 || true &&
       docker images | grep 'adriandotdev/emsp_v2' | awk '{print $3}' | xargs docker rmi -f || true &&
       docker pull sysnet2024/emsp_v2:latest &&
-      docker run -d -p 4021:4021 --name emsp_v2 sysnet2024/emsp_v2:latest"
+      docker run -d \
+      -p 4023:4023 \
+      --name emsp_v2 \
+      --mount type=bind,source=/data/logs,target=/var/www/emsp/logs \
+      --mount type=bind,source=/data/uploads,target=/var/www/emsp/public/images \
+      sysnet2024/emsp_v2:latest"
