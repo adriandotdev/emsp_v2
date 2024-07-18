@@ -21,8 +21,8 @@ build_image:
   before_script:
     - docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD
   script:
-    - docker build -t adriandotdev/emsp_v2 .
-    - docker push adriandotdev/emsp_v2
+    - docker build -t sysnet2024/emsp_v2 .
+    - docker push sysnet2024/emsp_v2
 
 deploy:
   stage: deploy
@@ -34,5 +34,5 @@ deploy:
       docker stop emsp_v2 || true &&
       docker rm emsp_v2 || true &&
       docker images | grep 'adriandotdev/emsp_v2' | awk '{print $3}' | xargs docker rmi -f || true &&
-      docker pull adriandotdev/emsp_v2:latest &&
-      docker run -d -p 4021:4021 --name emsp_v2 adriandotdev/emsp_v2:latest"
+      docker pull sysnet2024/emsp_v2:latest &&
+      docker run -d -p 4021:4021 --name emsp_v2 sysnet2024/emsp_v2:latest"
