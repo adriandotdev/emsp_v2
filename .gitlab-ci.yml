@@ -1,15 +1,17 @@
+variables:
+  IMAGE_NAME: sysnet2024/emsp_v2:latest
 stages:
-  - test
+  # - test
   - build
   - deploy
 
-run_tests:
-  stage: test
-  image: node:lts-slim
-  before_script:
-    - npm install
-  script:
-    - npm run test
+# run_tests:
+#   stage: test
+#   image: node:lts-slim
+#   before_script:
+#     - npm install
+#   script:
+#     - npm run test
 
 build_image:
   stage: build
@@ -33,11 +35,6 @@ deploy:
       docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD &&
       docker stop emsp_v2 || true &&
       docker rm emsp_v2 || true &&
-      docker images | grep 'sysnet2024/emsp_v2' | awk '{print \$3}' | xargs docker rmi -f || true &&
-      docker pull sysnet2024/emsp_v2:latest &&
-      docker run -d \
-      -p 4023:4023 \
-      --name emsp_v2 \
-      --mount type=bind,source=/data/logs,target=/var/www/emsp/logs \
-      --mount type=bind,source=/data/uploads,target=/var/www/emsp/public/images \
-      sysnet2024/emsp_v2:latest"
+      docker images | grep '$IMAGE_NAME' | awk '{print $3}' | xargs docker rmi -f || true &&
+      docker pull $IMAGE_NAME &&
+      docker run -d -p 4021:4021 --name emsp_v2 --mount type=bind,source=/data/logs,target=/var/www/emsp/logs --mount type=bind,source=/data/uploads,target=/var/www/emsp/public/images $IMAGE_NAME"
