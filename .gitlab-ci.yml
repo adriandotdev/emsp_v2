@@ -1,5 +1,5 @@
 variables:
-  IMAGE_NAME: sysnet2024/emsp_v2:latest
+  IMAGE_NAME: sysnet2024/emsp_v2
 stages:
   # - test
   - build
