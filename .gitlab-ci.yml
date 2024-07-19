@@ -16,6 +16,9 @@ stages:
 build_image:
   stage: build
   image: docker:24.0.7
+  tags:
+    - shared
+    - ubuntu
   services:
     - name: registry.hub.docker.com/library/docker:24.0.7-dind
       alias: docker
@@ -31,6 +34,9 @@ build_image:
 
 deploy:
   stage: deploy
+  tags:
+    - shared
+    - ubuntu
   before_script:
     - chmod 400 $SSH_KEY
   script:
