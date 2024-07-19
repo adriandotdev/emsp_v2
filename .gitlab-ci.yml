@@ -27,6 +27,7 @@ build_image:
   before_script:
     - apk update && apk add git
     - git remote set-url origin "${CI_REPOSITORY_URL}"
+    - docker run --privileged --name dind -d docker:24.0.7-dind
     - docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD
   script:
     - docker build -t sysnet2024/emsp_v2 .
