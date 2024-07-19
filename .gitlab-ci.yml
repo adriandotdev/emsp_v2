@@ -23,6 +23,7 @@ build_image:
   before_script:
     - docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD
   script:
+    - unset DOCKER_HOST
     - docker build -t sysnet2024/emsp_v2 .
     - docker push sysnet2024/emsp_v2
 
