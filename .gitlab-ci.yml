@@ -17,8 +17,7 @@ build_image:
   stage: build
   image: docker:latest
   tags:
-    - shared
-    - ubuntu
+    - sysnet_runner
   services:
     - docker:dind
   variables:
@@ -35,8 +34,7 @@ build_image:
 deploy:
   stage: deploy
   tags:
-    - shared
-    - ubuntu
+    - sysnet_runner
   before_script:
     - chmod 400 $SSH_KEY
   script:
