@@ -16,8 +16,6 @@ stages:
 build_image:
   stage: build
   image: docker:latest
-  tags:
-    - sysnet_runner
   services:
     - docker:dind
   variables:
