@@ -17,7 +17,8 @@ build_image:
   stage: build
   image: docker:24.0.7
   services:
-    - registry.hub.docker.com/library/docker:24.0.7-dind
+    - name: registry.hub.docker.com/library/docker:24.0.7-dind
+      alias: docker
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   before_script:
