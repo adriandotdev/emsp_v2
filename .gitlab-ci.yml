@@ -21,7 +21,7 @@ build_image:
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   before_script:
-    - apt update && apt install git
+    - apk update && apk add git
     - git remote set-url origin "${CI_REPOSITORY_URL}"
     - docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD
   script:
