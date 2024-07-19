@@ -21,7 +21,6 @@ build_image:
   variables:
     DOCKER_TLS_CERTDIR: "/certs"
   before_script:
-    - unset DOCKER_HOST
     - docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD
   script:
     - docker build -t sysnet2024/emsp_v2 .
