@@ -33,6 +33,10 @@ RUN npm install -g pm2@latest
 #Set work directory
 WORKDIR /var/www/emsp
 
+RUN mkdir -p /public/csv
+
+RUN mkdir -p /public/images
+
 #Copy all content of the current dir to WORKDIR
 COPY . .
 
