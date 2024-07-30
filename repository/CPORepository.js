@@ -184,7 +184,7 @@ module.exports = class CPORepository {
 	 */
 	RegisterEVSE(data, connection) {
 		const QUERY = `
-           CALL EMSP_REGISTER_EVSE(?,?,?,?,?,?,?,?,?,?,?)
+           CALL EMSP_REGISTER_EVSE(?,?,?,?,?,?,?,?,?,?,?,?,?)
         `;
 
 		return new Promise((resolve, reject) => {
@@ -202,6 +202,8 @@ module.exports = class CPORepository {
 					data.meter_type,
 					data.meter_serial_number,
 					data.location_id || null,
+					null,
+					null,
 				],
 				(err, result) => {
 					if (err) {
