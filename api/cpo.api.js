@@ -1,5 +1,5 @@
 const TokenMiddleware = require("../middlewares/TokenMiddleware");
-const { validationResult, body } = require("express-validator");
+const { validationResult, body, param } = require("express-validator");
 
 const logger = require("../config/winston");
 
@@ -105,10 +105,13 @@ module.exports = (app, upload) => {
 	);
 
 	// API for registering location with evses.
-	app.post(
+	app.put(
 		"/ocpi/registration/hub/2.2/locations/:country_code/:party_id",
 		[
 			tokenMiddleware.VerifyCPOToken(),
+			param("party_id")
+				.notEmpty()
+				.withMessage("Parameter: party_id must be specified"),
 			body("name")
 				.notEmpty()
 				.withMessage("Missing required property: name (Location name"),
