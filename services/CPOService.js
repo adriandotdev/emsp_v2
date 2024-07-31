@@ -82,6 +82,7 @@ module.exports = class CPOService {
 
 		try {
 			connection = await this.#repository.GetConnection();
+			connection.beginTransaction();
 
 			const evses = data.evses;
 			const cpo = await this.#repository.GetCPOOwnerIDByPartyID(data.party_id);

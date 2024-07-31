@@ -18,14 +18,7 @@ module.exports = class CPORepository {
 					reject(err);
 				}
 
-				connection.beginTransaction((err) => {
-					if (err) {
-						connection.release();
-						reject(err);
-					}
-
-					resolve(connection);
-				});
+				resolve(connection);
 			});
 		});
 	}
@@ -202,8 +195,8 @@ module.exports = class CPORepository {
 					data.meter_type,
 					data.meter_serial_number,
 					data.location_id || null,
-					null,
-					null,
+					data.floor_level || null,
+					data.directions || null,
 				],
 				(err, result) => {
 					if (err) {

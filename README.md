@@ -1,30 +1,30 @@
 # EMSP Version 2.0 APIs
 
 - [EMSP Version 2.0 APIs](#emsp-version-20-apis)
-	- [REST APIs](#rest-apis)
-		- [POST Register Charge Point Operator - `/ocpi/cpo/2.2/register`](#post-register-charge-point-operator---ocpicpo22register)
-		- [POST Upload CPO Logo - `/ocpi/cpo/2.2/cpo/upload`](#post-upload-cpo-logo---ocpicpo22cpoupload)
-		- [POST Login API - `/ocpi/cpo/api/auth/v1/login`](#post-login-api---ocpicpoapiauthv1login)
-		- [POST Upload Location Photos - `/ocpi/cpo/api/v1/locations/photos/uploads`](#post-upload-location-photos---ocpicpoapiv1locationsphotosuploads)
-		- [PATCH Update Location Photo by ID - `/ocpi/cpo/api/v1/locations/photos/uploads/:photo_id`](#patch-update-location-photo-by-id---ocpicpoapiv1locationsphotosuploadsphoto_id)
-		- [GET Refresh Token API - `/ocpi/cpo/api/auth/v1/refresh`](#get-refresh-token-api---ocpicpoapiauthv1refresh)
-		- [POST Logout API - `/ocpi/cpo/api/auth/v1/logout`](#post-logout-api---ocpicpoapiauthv1logout)
-		- [POST Change Old Password API - `/ocpi/cpo/api/auth/v1/change-old-password`](#post-change-old-password-api---ocpicpoapiauthv1change-old-password)
-		- [POST Register Locations through CSV - `/ocpi/cpo/api/v2/locations/uploads/csv`](#post-register-locations-through-csv---ocpicpoapiv2locationsuploadscsv)
-		- [GET Default Filters - `/ocpi/cpo/2.2/filters`](#get-default-filters---ocpicpo22filters)
-		- [GET List of Cities by Province - `/ocpi/cpo/2.2/filters/cities/:province_name`](#get-list-of-cities-by-province---ocpicpo22filterscitiesprovince_name)
-		- [GET Charging Point Operator (CPO) Details - `/ocpi/cpo/2.2/details`](#get-charging-point-operator-cpo-details---ocpicpo22details)
-		- [PATCH Update CPO Logo by CPO Owner ID - `/ocpi/cpo/2.2/cpo/logo/upload`](#patch-update-cpo-logo-by-cpo-owner-id---ocpicpo22cpologoupload)
-		- [GET Pending Locations and EVSEs - `/ocpi/cpo/2.2/locations/pending`](#get-pending-locations-and-evses---ocpicpo22locationspending)
-	- [GraphQL APIs](#graphql-apis)
-		- [Query EVSEs](#query-evses)
-		- [Query Locations](#query-locations)
-		- [Query FindEV Locations](#query-findev-locations)
-		- [Query FindEV Filter Locations](#query-findev-filter-locations)
-		- [Query Get Location by ID](#query-get-location-by-id)
-	- [Webhooks](#webhooks)
-		- [POST Webhook Add Location - `/ocpi/cpo/api/v1/webhook/locations/:country_code/:party_id`](#post-webhook-add-location---ocpicpoapiv1webhooklocationscountry_codeparty_id)
-		- [POST Webhook Add EVSE - `/ocpi/cpo/api/v1/webhook/evse/:country_code/:party_id`](#post-webhook-add-evse---ocpicpoapiv1webhookevsecountry_codeparty_id)
+  - [REST APIs](#rest-apis)
+    - [POST Register Charge Point Operator - `/ocpi/cpo/2.2/register`](#post-register-charge-point-operator---ocpicpo22register)
+    - [POST Upload CPO Logo - `/ocpi/cpo/2.2/cpo/upload`](#post-upload-cpo-logo---ocpicpo22cpoupload)
+    - [POST Login API - `/ocpi/cpo/api/auth/v1/login`](#post-login-api---ocpicpoapiauthv1login)
+    - [POST Upload Location Photos - `/ocpi/cpo/api/v1/locations/photos/uploads`](#post-upload-location-photos---ocpicpoapiv1locationsphotosuploads)
+    - [PATCH Update Location Photo by ID - `/ocpi/cpo/api/v1/locations/photos/uploads/:photo_id`](#patch-update-location-photo-by-id---ocpicpoapiv1locationsphotosuploadsphoto_id)
+    - [GET Refresh Token API - `/ocpi/cpo/api/auth/v1/refresh`](#get-refresh-token-api---ocpicpoapiauthv1refresh)
+    - [POST Logout API - `/ocpi/cpo/api/auth/v1/logout`](#post-logout-api---ocpicpoapiauthv1logout)
+    - [POST Change Old Password API - `/ocpi/cpo/api/auth/v1/change-old-password`](#post-change-old-password-api---ocpicpoapiauthv1change-old-password)
+    - [POST Register Locations through CSV - `/ocpi/cpo/api/v2/locations/uploads/csv`](#post-register-locations-through-csv---ocpicpoapiv2locationsuploadscsv)
+    - [GET Default Filters - `/ocpi/cpo/2.2/filters`](#get-default-filters---ocpicpo22filters)
+    - [GET List of Cities by Province - `/ocpi/cpo/2.2/filters/cities/:province_name`](#get-list-of-cities-by-province---ocpicpo22filterscitiesprovince_name)
+    - [GET Charging Point Operator (CPO) Details - `/ocpi/cpo/2.2/details`](#get-charging-point-operator-cpo-details---ocpicpo22details)
+    - [PATCH Update CPO Logo by CPO Owner ID - `/ocpi/cpo/2.2/cpo/logo/upload`](#patch-update-cpo-logo-by-cpo-owner-id---ocpicpo22cpologoupload)
+    - [GET Pending Locations and EVSEs - `/ocpi/cpo/2.2/locations/pending`](#get-pending-locations-and-evses---ocpicpo22locationspending)
+  - [GraphQL APIs](#graphql-apis)
+    - [Query EVSEs](#query-evses)
+    - [Query Locations](#query-locations)
+    - [Query FindEV Locations](#query-findev-locations)
+    - [Query FindEV Filter Locations](#query-findev-filter-locations)
+    - [Query Get Location by ID](#query-get-location-by-id)
+  - [Webhooks](#webhooks)
+    - [POST Webhook Add Location - `/ocpi/cpo/api/v1/webhook/locations/:country_code/:party_id`](#post-webhook-add-location---ocpicpoapiv1webhooklocationscountry_codeparty_id)
+    - [POST Webhook Add EVSE - `/ocpi/cpo/api/v1/webhook/evse/:country_code/:party_id`](#post-webhook-add-evse---ocpicpoapiv1webhookevsecountry_codeparty_id)
 
 ## REST APIs
 
@@ -45,7 +45,7 @@ Registers Charge Point Operator.
 	"contact_name": "Solarius CEO", // required
 	"contact_number": "09123456782", // required
 	"contact_email": "solarius@gmail.com", // required
-	"ocpp_ready": true, // required
+	"ocpp_ready": true, // optional
 	"logo": "cpo-logo.png" // optional
 }
 ```
@@ -910,8 +910,7 @@ query Location {
 
 **Arguments**
 
-- **id**
-  - Location's ID
+- **id** - Location's ID
 
 **Response**
 
@@ -927,7 +926,11 @@ query Location {
 
 ### POST Webhook Add Location - `/ocpi/cpo/api/v1/webhook/locations/:country_code/:party_id`
 
-**Authorization: Bearer CPO_TOKEN_C**
+**Description**
+
+A webhook for registering new locations together with its evses, and connectors.
+
+**Authorization: Bearer TOKEN_C**
 
 **Parameters**
 
