@@ -106,7 +106,7 @@ module.exports = (app, upload) => {
 
 	// API for registering location with evses.
 	app.post(
-		"/ocpi/cpo/2.2/locations/:country_code/:party_id",
+		"/ocpi/registration/hub/2.2/locations/:country_code/:party_id",
 		[
 			tokenMiddleware.VerifyCPOToken(),
 			body("name")
