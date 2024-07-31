@@ -109,15 +109,23 @@ module.exports = (app, upload) => {
 		"/ocpi/registration/hub/2.2/locations/:country_code/:party_id",
 		[
 			tokenMiddleware.VerifyCPOToken(),
-			param("party_id")
-				.notEmpty()
-				.withMessage("Parameter: party_id must be specified"),
 			body("name")
 				.notEmpty()
 				.withMessage("Missing required property: name (Location name"),
 			body("address")
 				.notEmpty()
 				.withMessage("Missing required property: address"),
+			body("coordinates")
+				.notEmpty()
+				.withMessage("Missing required property: coordinates")
+				.isObject()
+				.withMessage("Property coordinates must be an object"),
+			body("coordinates.latitude")
+				.notEmpty()
+				.withMessage("Missing required property: coordinates.latitude"),
+			body("coordinates.longitude")
+				.notEmpty()
+				.withMessage("Missing required property: coordinates.longitude"),
 			body("evses")
 				.notEmpty()
 				.withMessage("Missing required property: evses")
