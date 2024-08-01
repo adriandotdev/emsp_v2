@@ -175,8 +175,10 @@ module.exports = class LocationService {
 							cpo_owner_id: cpo[0].id,
 							name: data.name,
 							address: formatted_address,
-							lat,
-							lng,
+							lat: data.coordinates.latitude ? data.coordinates.latitude : lat,
+							lng: data.coordinates.longitude
+								? data.coordinates.longitude
+								: lng,
 							city,
 							region,
 							province: province ? province : regionLongName,

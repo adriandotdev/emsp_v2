@@ -38,7 +38,7 @@ module.exports = (app, upload) => {
 
 	// Webhook API for adding new locations
 	app.post(
-		"/ocpi/cpo/api/v1/webhook/locations/:country_code/:party_id",
+		"/ocpi/hub/2.2/locations/:country_code/:party_id",
 		[
 			tokenMiddleware.VerifyCPOToken(),
 			body("locations")
@@ -52,6 +52,19 @@ module.exports = (app, upload) => {
 			body("locations.*.address")
 				.notEmpty()
 				.withMessage("Missing required property: location.address"),
+			body("locations.*.coordinates")
+				.notEmpty()
+				.withMessage("Missing required property: location.coordinates"),
+			body("locations.*.coordinates.latitude")
+				.notEmpty()
+				.withMessage(
+					"Missing required property: location.coordinates.latitude"
+				),
+			body("locations.*.coordinates.longitude")
+				.notEmpty()
+				.withMessage(
+					"Missing required property: location.coordinates.longitude"
+				),
 			body("locations.*.evses")
 				.notEmpty()
 				.withMessage("Missing required property: location.evses")
@@ -169,12 +182,9 @@ module.exports = (app, upload) => {
 
 	// Webhook API for adding evse to a certain location
 	app.post(
-		"/ocpi/cpo/api/v1/webhook/evse/:country_code/:party_id",
+		"/ocpi/hub/2.2/locations/evse/:country_code/:party_id/:location_id",
 		[
 			tokenMiddleware.VerifyCPOToken(),
-			body("location_id")
-				.notEmpty()
-				.withMessage("Missing required property: location_id"),
 			body("uid").notEmpty().withMessage("Missing required property: uid"),
 			body("meter_type")
 				.notEmpty()
@@ -243,7 +253,11 @@ module.exports = (app, upload) => {
 					},
 				});
 
-				const result = await service.RegisterEVSE(req.body);
+				const result = await service.RegisterEVSE({
+					location_id: req.params.location_id,
+					...req.body,
+				});
+
 				logger.info({
 					WEBHOOK_ADD_EVSE_RESPONSE: {
 						message: "SUCCESS",
