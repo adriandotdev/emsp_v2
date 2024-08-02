@@ -108,8 +108,10 @@ describe("Location Service - Unit Tests", () => {
 		data = {
 			name: "Yan-Yan's Store",
 			address: "BLK 137 LOT 3, Phase 2, Cabuyao, Laguna",
-			lat: "14.12345",
-			lng: "121.12345",
+			coordinates: {
+				latitude: "14.12345",
+				longitude: "121.12345",
+			},
 			evses: [
 				{
 					uid: "123456689",
@@ -217,7 +219,7 @@ describe("Location Service - Unit Tests", () => {
 			await locationService.RegisterAllLocationsAndEVSEs("TES", [data]);
 		} catch (err) {
 			expect(err).toBeInstanceOf(HttpInternalServerError);
-			expect(err.message).toBe("CSV_CANNOT_BE_PROCESSED");
+			expect(err.message).toBe("WEBHOOK_CANNOT_BE_PROCESSED");
 		}
 	});
 
@@ -294,8 +296,10 @@ describe("Location Service - Unit Tests", () => {
 		data = {
 			name: "Yan-Yan's Store",
 			address: "BLK 137 LOT 3, Phase 2, Cabuyao, Laguna",
-			lat: "14.12345",
-			lng: "121.12345",
+			coordinates: {
+				latitude: "14.12345",
+				longitude: "121.12345",
+			},
 			evses: [
 				{
 					uid: "123456689",
@@ -353,8 +357,10 @@ describe("Location Service - Unit Tests", () => {
 		data = {
 			name: "Yan-Yan's Store",
 			address: "BLK 137 LOT 3, Phase 2, Cabuyao, Laguna",
-			lat: "14.12345",
-			lng: "121.12345",
+			coordinates: {
+				latitude: "14.12345",
+				longitude: "121.12345",
+			},
 			evses: [
 				{
 					uid: "123456689",
@@ -412,8 +418,10 @@ describe("Location Service - Unit Tests", () => {
 		data = {
 			name: "Yan-Yan's Store",
 			address: "BLK 137 LOT 3, Phase 2, Cabuyao, Laguna",
-			lat: "14.12345",
-			lng: "121.12345",
+			coordinates: {
+				latitude: "14.12345",
+				longitude: "121.12345",
+			},
 			evses: [
 				{
 					uid: "123456689",
@@ -475,8 +483,10 @@ describe("Location Service - Unit Tests", () => {
 		data = {
 			name: "Yan-Yan's Store",
 			address: "BLK 137 LOT 3, Phase 2, Cabuyao, Laguna",
-			lat: "14.12345",
-			lng: "121.12345",
+			coordinates: {
+				latitude: "14.12345",
+				longitude: "121.12345",
+			},
 			evses: [
 				{
 					uid: "123456689",
@@ -516,8 +526,10 @@ describe("Location Service - Unit Tests", () => {
 		data = {
 			name: "Yan-Yan's Store",
 			address: "BLK 137 LOT 3, Phase 2, Cabuyao, Laguna",
-			lat: "14.12345",
-			lng: "121.12345",
+			coordinates: {
+				latitude: "14.12345",
+				longitude: "121.12345",
+			},
 			evses: [
 				{
 					uid: "123456689",
@@ -557,8 +569,10 @@ describe("Location Service - Unit Tests", () => {
 		data = {
 			name: "Yan-Yan's Store",
 			address: "BLK 137 LOT 3, Phase 2, Cabuyao, Laguna",
-			lat: "14.12345",
-			lng: "121.12345",
+			coordinates: {
+				latitude: "14.12345",
+				longitude: "121.12345",
+			},
 			evses: [
 				{
 					uid: "123456689",

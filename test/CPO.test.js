@@ -85,8 +85,10 @@ describe("CPO Service - Unit Tests", () => {
 		data = {
 			name: "Yan-Yan's Store",
 			address: "BLK 137 LOT 3, Phase 2, Cabuyao, Laguna",
-			lat: "14.12345",
-			lng: "121.12345",
+			coordinates: {
+				latitude: 14.12345,
+				longitude: 121.12345,
+			},
 			evses: [
 				{
 					uid: "123456689",
