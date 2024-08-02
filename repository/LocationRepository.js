@@ -857,4 +857,41 @@ module.exports = class LocationRepository {
 			});
 		});
 	}
+
+	UpdateConnectorStatus({
+		location_id,
+		evse_uid,
+		connector_id,
+		connector_status,
+	}) {
+		const QUERY = `
+		CALL EMSP_UPDATE_CONNECTOR_STATUS(?,?,?,?);
+		`;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(
+				QUERY,
+				[location_id, evse_uid, connector_id, connector_status],
+				(err, result) => {
+					if (err) reject(err);
+
+					resolve(result);
+				}
+			);
+		});
+	}
+
+	CheckAndUpdateEVSEStatus(evse_uid) {
+		const QUERY = `
+		CALL EMSP_CHECK_AND_UPDATE_EVSE_STATUS(?)
+		`;
+
+		return new Promise((resolve, reject) => {
+			mysql.query(QUERY, [evse_uid], (err, result) => {
+				if (err) reject(err);
+
+				resolve(result);
+			});
+		});
+	}
 };

@@ -401,6 +401,35 @@ module.exports = class LocationService {
 		}
 	}
 
+	async UpdateConnectorStatus({
+		country_code,
+		location_id,
+		evse_uid,
+		connector_id,
+		connector_status,
+	}) {
+		if (country_code !== "PH")
+			throw new HttpBadRequest("INVALID_COUNTRY_CODE", {
+				message: "Country code must be equal to PH",
+			});
+
+		const result = await this.#locationRepository.UpdateConnectorStatus({
+			location_id,
+			evse_uid,
+			connector_id,
+			connector_status,
+		});
+
+		const status = result[0][0]?.STATUS;
+		const status_type = result[0][0]?.status_type;
+
+		if (status_type === "bad_request") throw new HttpBadRequest(status, []);
+
+		await this.#locationRepository.CheckAndUpdateEVSEStatus(evse_uid);
+
+		return status;
+	}
+
 	/**
 	 *
 	 * @param {Array} photos

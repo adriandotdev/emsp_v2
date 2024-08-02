@@ -273,6 +273,55 @@ module.exports = (app, upload) => {
 		}
 	);
 
+	// Webhook API for updating connector status
+	app.put(
+		"/ocpi/hub/2.2/locations/:country_code/:party_id/:location_id/:evse_uid/:connector_id",
+		[tokenMiddleware.VerifyCPOToken()],
+		/**
+		 * @param {import('express').Request} req
+		 * @param {import('express').Response} res
+		 * @param {import('express').NextFunction} next
+		 */
+		async (req, res, next) => {
+			try {
+				logger.info({
+					UPDATE_CONNECTOR_STATUS_REQUEST: {
+						data: {
+							...req.body,
+							...req.params,
+						},
+						message: "SUCCESS",
+					},
+				});
+
+				const { country_code, location_id, evse_uid, connector_id } =
+					req.params;
+				const { status } = req.body;
+
+				const result = await service.UpdateConnectorStatus({
+					country_code,
+					location_id,
+					evse_uid,
+					connector_id,
+					connector_status: status,
+				});
+
+				logger.info({
+					UPDATE_CONNECTOR_STATUS_RESPONSE: {
+						message: "SUCCESS",
+					},
+				});
+
+				return res
+					.status(200)
+					.json({ status: 200, data: result, message: "Success" });
+			} catch (err) {
+				err.error_name = "UPDATE_CONNECTOR_STATUS_ERROR";
+				next(err);
+			}
+		}
+	);
+
 	// API for uploading location photos
 	app.post(
 		"/ocpi/cpo/api/v1/locations/photos/uploads",
