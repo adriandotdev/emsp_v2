@@ -22,3 +22,9 @@ All notable changes to this project will be documented in this file.
 - API for adding evse
 
   From `/ocpi/cpo/api/v1/webhook/evse/:country_code/:party_id` to `/ocpi/hub/2.2/locations/evse/:country_code/:party_id/:location_id`
+
+## [1.0.1] - 2024-08-05
+
+### Added
+
+- Websocket Connection
