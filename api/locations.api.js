@@ -8,11 +8,14 @@ const logger = require("../config/winston");
 const { body, validationResult } = require("express-validator");
 
 const { HttpUnprocessableEntity } = require("../utils/HttpError");
+const io = require("../server");
 /**
  * @param {import('express').Express} app
  * @param {import('multer').Multer} upload
  */
-module.exports = (app, upload) => {
+module.exports = (app, upload, io) => {
+	logger.info("Controller: locations.api.js initialized");
+
 	const service = new LocationService(
 		new CSVRepository(),
 		new LocationRepository()
@@ -306,6 +309,13 @@ module.exports = (app, upload) => {
 					connector_status: status,
 				});
 
+				// Call the socket event on FindEV
+				/**
+				 * Find EV must have listen to event emsp.evse-status-update
+				 */
+				io.emit("emsp.evse-status-update", { evse_uid, connector_id, status });
+
+				// Call other partner APIs
 				logger.info({
 					UPDATE_CONNECTOR_STATUS_RESPONSE: {
 						message: "SUCCESS",

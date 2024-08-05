@@ -31,6 +31,7 @@ const swaggerDocument = YAML.load("./swagger.yaml");
 // Graphql setup
 const { createHandler } = require("graphql-http/lib/use/express");
 const schema = require("./graphql/schema");
+const SocketConnection = require("./utils/SocketConnection");
 
 app.use("/login/docs", swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 app.use(helmet());
@@ -128,6 +129,9 @@ const csvUpload = multer({
 	fileFilter: allowedFileType,
 	limits: { files: 1 },
 });
+const httpServer = require("http").createServer(app);
+const io = SocketConnection.InitializeSocket(httpServer);
+
 /**
  * Import all of your routes below
  */
@@ -136,7 +140,7 @@ require("./api/accounts.api")(app);
 require("./api/cpo.api")(app, upload);
 require("./api/filters.api")(app);
 require("./api/csv.api")(app, csvUpload);
-require("./api/locations.api")(app, upload);
+require("./api/locations.api")(app, upload, io);
 
 app.use(
 	"/ocpi/cpo/graphql",
@@ -166,4 +170,4 @@ app.use("*", (req, res, next) => {
 	return res.status(404).json({ status: 404, data: [], message: "Not Found" });
 });
 
-module.exports = app;
+module.exports = { httpServer, app, io };
