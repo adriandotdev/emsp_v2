@@ -32,6 +32,7 @@ const Crypto = require("../utils/Crypto");
  * @param {import('express').Express} app
  */
 module.exports = (app) => {
+	logger.info("Controller: accounts.api.js initialized");
 	const service = new AccountService();
 	const tokenMiddleware = new TokenMiddleware();
 	/**

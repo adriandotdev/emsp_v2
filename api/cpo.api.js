@@ -15,6 +15,7 @@ const { HttpUnprocessableEntity } = require("../utils/HttpError");
  * @param {import('multer').Multer} upload
  */
 module.exports = (app, upload) => {
+	logger.info("Controller: cpo.api.js initialized");
 	const service = new CPOService(new CPORepository());
 	const tokenMiddleware = new TokenMiddleware();
 	/**

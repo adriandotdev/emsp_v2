@@ -11,6 +11,7 @@ const TokenMiddleware = require("../middlewares/TokenMiddleware");
  * @param {import('multer').Multer} csvUpload
  */
 module.exports = (app, csvUpload) => {
+	logger.info("Controller: locations.api.js initialized");
 	const csvService = new CSVService(
 		new CSVRepository(),
 		new LocationRepository()

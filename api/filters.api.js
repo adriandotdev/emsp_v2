@@ -5,6 +5,7 @@ const TokenMiddleware = require("../middlewares/TokenMiddleware");
  * @param {import('express').Express} app
  */
 module.exports = (app) => {
+	logger.info("Controller: filters.api.js initialized");
 	const tokenMiddleware = new TokenMiddleware();
 	const service = new FiltersService();
 
