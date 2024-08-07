@@ -26,6 +26,7 @@
     - [POST OCPI Add Location - `/ocpi/hub/2.2/locations/:country_code/:party_id`](#post-ocpi-add-location---ocpihub22locationscountry_codeparty_id)
     - [POST OCPI Add EVSE - `/ocpi/hub/2.2/locations/evse/:country_code/:party_id/:location_id`](#post-ocpi-add-evse---ocpihub22locationsevsecountry_codeparty_idlocation_id)
     - [PUT OCPI Update EVSE Status - `/ocpi/hub/2.2/locations/:country_code/:party_id/:location_id/:evse_uid/:connector_id`](#put-ocpi-update-evse-status---ocpihub22locationscountry_codeparty_idlocation_idevse_uidconnector_id)
+    - [POST /ocpi/hub/2.2/locations/temp/:country_code/:party_id](#post-ocpihub22locationstempcountry_codeparty_id)
 
 ## REST APIs
 
@@ -1055,9 +1056,15 @@ A webhook for registering new locations together with its evses, and connectors.
 }
 ```
 
+[Back to Top](#emsp-version-20-apis)
+
 ---
 
 ### PUT OCPI Update EVSE Status - `/ocpi/hub/2.2/locations/:country_code/:party_id/:location_id/:evse_uid/:connector_id`
+
+**Description**
+
+Registers location for approval
 
 **Authorization: Bearer TOKEN_C**
 
@@ -1085,3 +1092,78 @@ A webhook for registering new locations together with its evses, and connectors.
 	"message": "Success"
 }
 ```
+
+[Back to Top](#emsp-version-20-apis)
+
+---
+
+### POST /ocpi/hub/2.2/locations/temp/:country_code/:party_id
+
+**Authorization: Bearer TOKEN_C**
+
+**Parameters**
+
+- country_code
+- party_id
+
+**Request Body**
+
+```json
+{
+	"locations": [
+		{
+			"name": "Yan-Yan's Store",
+			"address": "BLK 137 LOT 3, Phase 2, Cabuyao, Laguna",
+			"coordinates": {
+				"latitude": "14.12347",
+				"longitude": "121.12345"
+			},
+			"evses": [
+				{
+					"uid": "555555551",
+					"status": "AVAILABLE",
+					"meter_type": "AC",
+					"kwh": 7,
+					"connectors": [
+						{
+							"standard": "CHADEMO",
+							"format": "SOCKET",
+							"power_type": "AC",
+							"max_voltage": 230,
+							"max_amperage": 16,
+							"max_electric_power": 120
+						},
+						{
+							"standard": "TYPE_2",
+							"format": "SOCKET",
+							"power_type": "AC",
+							"max_voltage": 230,
+							"max_amperage": 16,
+							"max_electric_power": 120
+						}
+					],
+					"capabilities": ["CREDIT_DEBIT_PAYABLE", "QR_READER"],
+					"payment_types": ["GCASH", "MAYA"],
+					"floor_level": 1,
+					"direction": "Go near Makati Ave"
+				}
+			],
+			"facilities": ["CINEMA", "CAFE"],
+			"parking_types": ["INDOOR"],
+			"parking_restrictions": ["CUSTOMERS", "DISABLED"]
+		}
+	]
+}
+```
+
+**Response**
+
+```json
+{
+	"status": 200,
+	"data": [],
+	"message": "Success"
+}
+```
+
+[Back to Top](#emsp-version-20-apis)

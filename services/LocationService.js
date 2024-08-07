@@ -493,4 +493,89 @@ module.exports = class LocationService {
 			throw err;
 		}
 	}
+
+	async RegisterAllLocationsToTemporaryTable(cpo_owner_id, data) {
+		const facilityTable = {};
+		const parkingTypesTable = {};
+		const capabilitiesTable = {};
+		const paymentTypesTable = {};
+
+		const facilities = await this.#locationRepository.GetFacilities();
+		const parking_types = await this.#locationRepository.GetParkingTypes();
+		const capabilities = await this.#locationRepository.GetCapabilities();
+		const payment_types = await this.#locationRepository.GetPaymentTypes();
+
+		facilities.forEach((facility) => {
+			facilityTable[facility.code] = facility.id;
+		});
+
+		parking_types.forEach((parking_type) => {
+			parkingTypesTable[parking_type.code] = parking_type.id;
+		});
+
+		capabilities.forEach((capability) => {
+			capabilitiesTable[capability.code] = capability.id;
+		});
+
+		payment_types.forEach((payment_type) => {
+			paymentTypesTable[payment_type.code] = payment_type.id;
+		});
+
+		// Define the code mappings
+		const codeMappings = {
+			facilities: facilityTable,
+			parking_types: parkingTypesTable,
+			capabilities: capabilitiesTable,
+			payment_types: paymentTypesTable,
+			parking_restrictions: {
+				CUSTOMERS: 1,
+				DISABLED: 2,
+			},
+		};
+
+		// Function to map values to codes
+		const mapToCodes = (items, mapping) => items.map((item) => mapping[item]);
+
+		const output = [];
+
+		data.locations.forEach((location) => {
+			location.evses.forEach((evse) => {
+				const connectorStandards = evse.connectors.map((conn) => conn.standard);
+				const firstConnector = evse.connectors[0]; // Assuming all connectors have the same format, power_type, etc.
+
+				output.push([
+					cpo_owner_id,
+					location.name,
+					location.address,
+					location.coordinates.latitude,
+					location.coordinates.longitude,
+					evse.uid,
+					evse.kwh,
+					JSON.stringify(connectorStandards),
+					firstConnector.format,
+					firstConnector.power_type,
+					firstConnector.max_voltage,
+					firstConnector.max_amperage,
+					firstConnector.max_electric_power,
+					JSON.stringify(
+						mapToCodes(location.facilities, codeMappings.facilities)
+					),
+					JSON.stringify(
+						mapToCodes(location.parking_types, codeMappings.parking_types)
+					),
+					JSON.stringify(
+						mapToCodes(evse.capabilities, codeMappings.capabilities)
+					),
+					JSON.stringify(
+						mapToCodes(evse.payment_types, codeMappings.payment_types)
+					),
+					evse.floor_level, // Assuming a static value for this field as no information provided
+					evse.direction, // Assuming a static value for this field as no information provided
+				]);
+			});
+		});
+
+		// console.log(output);
+		await this.#csvRepository.InsertTemporaryData(output);
+	}
 };

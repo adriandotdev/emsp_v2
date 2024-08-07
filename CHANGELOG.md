@@ -28,3 +28,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Websocket Connection
+
+## [1.1.0] - 2024-08-07
+
+- API for registering location for approval. Locations will be inserted inside the csv_temporary_table.
