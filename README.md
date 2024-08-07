@@ -22,9 +22,10 @@
     - [Query FindEV Locations](#query-findev-locations)
     - [Query FindEV Filter Locations](#query-findev-filter-locations)
     - [Query Get Location by ID](#query-get-location-by-id)
-  - [Webhooks](#webhooks)
-    - [POST Webhook Add Location - `/ocpi/cpo/api/v1/webhook/locations/:country_code/:party_id`](#post-webhook-add-location---ocpicpoapiv1webhooklocationscountry_codeparty_id)
-    - [POST Webhook Add EVSE - `/ocpi/cpo/api/v1/webhook/evse/:country_code/:party_id`](#post-webhook-add-evse---ocpicpoapiv1webhookevsecountry_codeparty_id)
+  - [OCPI APIs](#ocpi-apis)
+    - [POST OCPI Add Location - `/ocpi/hub/2.2/locations/:country_code/:party_id`](#post-ocpi-add-location---ocpihub22locationscountry_codeparty_id)
+    - [POST OCPI Add EVSE - `/ocpi/hub/2.2/locations/evse/:country_code/:party_id/:location_id`](#post-ocpi-add-evse---ocpihub22locationsevsecountry_codeparty_idlocation_id)
+    - [PUT OCPI Update EVSE Status - `/ocpi/hub/2.2/locations/:country_code/:party_id/:location_id/:evse_uid/:connector_id`](#put-ocpi-update-evse-status---ocpihub22locationscountry_codeparty_idlocation_idevse_uidconnector_id)
 
 ## REST APIs
 
@@ -922,9 +923,9 @@ query Location {
 
 ---
 
-## Webhooks
+## OCPI APIs
 
-### POST Webhook Add Location - `/ocpi/cpo/api/v1/webhook/locations/:country_code/:party_id`
+### POST OCPI Add Location - `/ocpi/hub/2.2/locations/:country_code/:party_id`
 
 **Description**
 
@@ -1011,7 +1012,7 @@ A webhook for registering new locations together with its evses, and connectors.
 
 ---
 
-### POST Webhook Add EVSE - `/ocpi/cpo/api/v1/webhook/evse/:country_code/:party_id`
+### POST OCPI Add EVSE - `/ocpi/hub/2.2/locations/evse/:country_code/:party_id/:location_id`
 
 **Authorization: Bearer CPO_TOKEN_C**
 
@@ -1045,6 +1046,37 @@ A webhook for registering new locations together with its evses, and connectors.
 ```
 
 **Response**
+
+```json
+{
+	"status": 200,
+	"data": "SUCCESS",
+	"message": "Success"
+}
+```
+
+---
+
+### PUT OCPI Update EVSE Status - `/ocpi/hub/2.2/locations/:country_code/:party_id/:location_id/:evse_uid/:connector_id`
+
+**Authorization: Bearer TOKEN_C**
+
+**Parameters**
+
+- country_code
+- location_id
+- evse_uid
+- connector_id
+
+**Request Body**
+
+```json
+{
+	"status": "CHARGING" // AVAILABLE, RESERVED, CHARGING
+}
+```
+
+**Response Body**
 
 ```json
 {
